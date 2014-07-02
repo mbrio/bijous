@@ -8,7 +8,6 @@ var fs = require('fs');
 var should = require('should');
 var Bijous = require('../index');
 
-
 describe('Bijous', function () {
   describe('#cwd', function () {
     it('should be the directory of the requiring module', function () {
