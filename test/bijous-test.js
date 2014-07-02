@@ -285,7 +285,7 @@ describe('Bijous', function () {
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
       bijous.load(function (error, results) {
-        should(error).be.ok; // jshint ignore:line
+        error.should.be.ok; // jshint ignore:line
         Object.keys(bijous.modules).length.should.be.exactly(0);
         done();
       });
@@ -299,9 +299,23 @@ describe('Bijous', function () {
 
       try {
         bijous.load();
-        should(false).be.ok; // jshint ignore:line
+
+        false.should.be.equal(true);
       } catch (err) {
-        err.should.be.ok; // jshint ignore:line
+        err.message.should.equal('error1');
+        done();
+      }
+    });
+
+    it('should not allow to be called multiple times', function (done) {
+      var bijous = new Bijous();
+      bijous.load();
+
+      try {
+        bijous.load();
+        false.should.not.equal(true);
+      } catch (err) {
+        err.message.should.equal('You may only call Bijous#load once.');
         done();
       }
     });

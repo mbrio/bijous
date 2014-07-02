@@ -13,6 +13,13 @@ util.inherits(Bijous, EventEmitter);
  * @desc The callback used when loading modules to tell {@linkcode Bijous} that the module has completed loading.
  * @param {object=} error - If an error occurs the callback will receive an error object
  * @param {*=} results - An object used to represent the module after loading
+ * @example
+ * // We may assume this resides in a file modules/module1/index.js
+ * exports = module.exports = function (context, done) {
+ *   done(null, {
+ *     moduleData: 'some data'
+ *   });
+ * }
  */
 
 /**
@@ -41,6 +48,34 @@ util.inherits(Bijous, EventEmitter);
  * @property {object} modules - An object containing keys that represent results returned by modules when the
  * {@linkcode Bijous#load} method is called. The keys correspond with the module's filename, not including the
  * extension. (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
+ * @example
+ * var Bijous = require('bijous');
+ *
+ * // Loads all modules
+ * var bijous = new Bijous();
+ * bijous.load();
+ *
+ * // Overrides the cwd option and loads all modules relative to it
+ * var bijous = new Bijous({
+ *   cwd: '~/modules'
+ * });
+ * bijous.load();
+ *
+ * // Overrides the bundles option and loads all modules accordingly
+ * var bijous = new Bijous({
+ *   bundles: 'modules/!(router)'
+ * });
+ * bijous.load();
+ *
+ * // Overrides the bundles option with multi bundles and loads all modules
+ * // one bundle's modules accordingly
+ * var bijous = new Bijous({
+ *   bundles: {
+ *     server: 'modules/!(router)',
+ *     web: ['webModules/*', 'adminModules/*']
+ *   }
+ * });
+ * bijous.load('server');
  */
 function Bijous(options) {
   options = options || {};
@@ -51,12 +86,25 @@ function Bijous(options) {
   this.cwd = options.cwd || path.dirname(mod.filename);
   this.bundles = options.bundles || Bijous.defaultBundles;
   this.modules = {};
+  this._loaded = false;
 }
 
 /**
  * Retrieves all modules found for it's bundles or a supplied bundle name
  * @param {string=} bundle - The name of the bundle that should be used when retrieving modules
  * @returns {object[]} - An array of [klect]{@link https://github.com/awnist/klect} assets
+ * @example
+ * var Bijous = require('bijous');
+ *
+ * // List all modules
+ * var bijous = new Bijous({
+ *   bundles: {
+ *     public: 'modules/public/*',
+ *     private: 'modules/private/*'
+ *   }
+ * });
+ * var allBundles = bijous.list();
+ * var onlyPublicBundles = bijous.list('public');
  */
 Bijous.prototype.list = function list(bundle) {
   var klect = new Klect({ cwd: this.cwd });
@@ -72,15 +120,50 @@ Bijous.prototype.list = function list(bundle) {
  * becomes it's responsibility. When one is not specified and an error occurs then the error will be thrown.
  * @param {object=} error - If an error occurs the callback will receive an error object
  * @param {*=} results - An array of any objects returned as representations of modules
+ * @example
+ * var Bijous = require('bijous');
+ * var bijous = new Bijous();
+ * bijous.load(function (error, results) {
+ *   if (error) { throw error; }
+ *   console.log(results);
+ * });
  */
 
 /**
  * Requires all modules found for it's bundles or a supplied bundle name, and executes the async callback defined by the
- * module
+ * module. May only be called once.
  * @param {string=} bundle - The name of the bundle that should be used when loading modules
  * @param {Bijous~loadCallback=} callback - A callback method to use when all modules are loaded
+ * @example
+ * var Bijous = require('bijous');
+ *
+ * // Loads all modules
+ * var bijous = new Bijous();
+ * bijous.load();
+ *
+ * // Loads only modules belonging to the module1 bundle
+ * bijous = new Bijous({ bundles: { module1: ['modules/module1'] }});
+ * bijous.load('module1');
+ *
+ * // Loads all modules and executes a callback once all are loaded
+ * bijous = new Bijous();
+ * bijous.load(function (error, results) {
+ *   if (error) { throw error; }
+ *   console.log(results);
+ * });
+ *
+ * // Loads only modules belonging to the module1 bundle and executes a callback
+ * // once all are loaded
+ * bijous = new Bijous({ bundles: { module1: ['modules/module1'] }});
+ * bijous.load('module1', function (error, results) {
+ *   if (error) { throw error; }
+ *   console.log(results);
+ * });
  */
 Bijous.prototype.load = function load(bundle, callback) {
+  if (this._loaded === true) { throw new Error('You may only call Bijous#load once.'); }
+  this._loaded = true;
+
   if ('function' === typeof bundle) {
     callback = bundle;
     bundle = null;
@@ -105,6 +188,7 @@ Bijous.prototype.load = function load(bundle, callback) {
 
   async.series(fns, function (error, results) {
     if (callback) { callback(error, results); }
+    /* istanbul ignore next */
     else if (error) { throw error; }
 
     self.emit('done', self);
@@ -112,10 +196,22 @@ Bijous.prototype.load = function load(bundle, callback) {
 };
 
 /**
- * Loads all modules found for it's bundles or a supplied bundle name
+ * Requires all modules found for it's bundles or a supplied bundle name
  * @param {string=} bundle - The name of the bundle that should be used when requiring modules
  * @returns {object} - An object containing keys corresponding with the module's filename, not including the extension.
  * (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
+ * @example
+ * var Bijous = require('bijous');
+ *
+ * // List all modules
+ * var bijous = new Bijous({
+ *   bundles: {
+ *     public: 'modules/public/*',
+ *     private: 'modules/private/*'
+ *   }
+ * });
+ * var allBundles = bijous.require();
+ * var onlyPublicBundles = bijous.require('public');
  */
 Bijous.prototype.require = function req(bundle) {
   var assets = this.list(bundle);

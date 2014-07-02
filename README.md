@@ -58,7 +58,7 @@ The following code will load all modules within the `modules` folder.
 ```JavaScript
 var Bijous = require('bijous');
 var bijous = new Bijous();
-bijous.require();
+bijous.load();
 ```
 
 ## License

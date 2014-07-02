@@ -26,7 +26,7 @@ gulp.task('test', ['lint'], function gulpCoverage(cb) {
 });
 
 gulp.task('docs', function gulpDoc(cb) {
-  return gulp.src(['README.md'].concat(srcFiles))
+  return gulp.src(['./README.md'].concat(srcFiles))
     .pipe(jsdoc('./docs'));
 });
 
