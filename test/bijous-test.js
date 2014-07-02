@@ -206,5 +206,33 @@ describe('Bijous', function () {
         done(err);
       });
     });
+
+    it('should load all modules and handle errors with callback', function (done) {
+      var bijous = new Bijous({
+        bundles: 'errors/*'
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+
+      bijous.require(function (error, results) {
+        should(error).be.ok; // jshint ignore:line
+        Object.keys(bijous.modules).length.should.be.exactly(0);
+        done();
+      });
+    });
+
+    it('should load all modules and throw errors without callback', function (done) {
+      var bijous = new Bijous({
+        bundles: 'errors/*'
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+
+      try {
+        bijous.require();
+        should(false).be.ok; // jshint ignore:line
+      } catch (err) {
+        err.should.be.ok; // jshint ignore:line
+        done();
+      }
+    });
   });
 });

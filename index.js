@@ -11,7 +11,7 @@ function Bijous(options) {
   options = options || {};
   EventEmitter.call(this);
 
-  var mod = module.parent || module;
+  var mod = module.parent;
 
   this.cwd = options.cwd || path.dirname(mod.filename);
   this.bundles = options.bundles || Bijous.defaultBundles;
