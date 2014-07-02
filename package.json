@@ -26,7 +26,12 @@
     "url": "git://github.com/mbrio/bijous.git"
   },
   "keywords": [
-    "modules"
+    "modules",
+    "components",
+    "features",
+    "feats",
+    "mods",
+    "plugins"
   ],
   "author": "Michael Diolosa <michael.diolosa@gmail.com>",
   "license": "ISC",
