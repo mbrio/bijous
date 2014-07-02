@@ -170,19 +170,18 @@ Bijous.prototype.load = function load(bundle, callback) {
   }
 
   var modules = this.require(bundle);
-  var moduleKeys = Object.keys(modules);
   var self = this;
 
-  var fns = moduleKeys.map(function (key) {
+  var fns = modules.map(function (def) {
     return function loadAsset(done) {
       var cb = function (error, results) {
-        if (results) { self.modules[key] = results; }
+        if (results) { self.modules[def.name] = results; }
 
-        self.emit('loaded', key, results);
+        self.emit('loaded', def.name, results);
         done(error, results);
       };
 
-      modules[key].call(null, self, cb);
+      def.module.call(null, self, cb);
     };
   });
 
@@ -196,10 +195,15 @@ Bijous.prototype.load = function load(bundle, callback) {
 };
 
 /**
+ * @typedef ModuleDefinition
+ * @desc An object containing the required module definition
+ * @property {string} name - The module's name
+ * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded 
+
+/**
  * Requires all modules found for it's bundles or a supplied bundle name
  * @param {string=} bundle - The name of the bundle that should be used when requiring modules
- * @returns {object} - An object containing keys corresponding with the module's filename, not including the extension.
- * (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
+ * @returns {ModuleDefinition[]} - An array of {@linkcode ModuleDefinition|module} definitions
  * @example
  * var Bijous = require('bijous');
  *
@@ -216,13 +220,17 @@ Bijous.prototype.load = function load(bundle, callback) {
 Bijous.prototype.require = function req(bundle) {
   var assets = this.list(bundle);
   var self = this;
-  var modules = {};
+  var modules = [];
   
   assets.files().map(function (file) {
     var extname = path.extname(file);
     var basename = path.basename(file, extname);
+    var module = {
+      name: basename,
+      module: require(path.join(self.cwd, file))
+    }
 
-    modules[basename] = require(path.join(self.cwd, file));
+    modules.push(module);
   });
 
   return modules;

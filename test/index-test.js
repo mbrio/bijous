@@ -9,6 +9,15 @@ var should = require('should');
 var async = require('async');
 var Bijous = require('../index');
 
+function findModule(modules, name) {
+  var found = false;
+  for (var obj in modules) {
+    var module = modules[obj];
+    if (module.name === name) { found = true; }
+  }
+  return found;
+}
+
 describe('Bijous', function () {
   describe('#cwd', function () {
     it('should be the directory of the requiring module', function () {
@@ -118,12 +127,14 @@ describe('Bijous', function () {
     it('should require all modules', function () {
       var bijous = new Bijous();
       var modules = bijous.require();
-      Object.keys(modules).length.should.be.exactly(3);
+      modules.length.should.be.exactly(3);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        modules.should.have.property(basename);
+        
+        var found = findModule(modules, basename);
+        found.should.equal(true);
       });
     });
 
@@ -137,18 +148,22 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
       var modules = bijous.require();
-      Object.keys(modules).length.should.be.exactly(5);
+      modules.length.should.be.exactly(5);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        modules.should.have.property(basename);
+        
+        var found = findModule(modules, basename);
+        found.should.equal(true);
       });
 
       fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        modules.should.have.property(basename);
+        
+        var found = findModule(modules, basename);
+        found.should.equal(true);
       });
     });
 
@@ -163,25 +178,29 @@ describe('Bijous', function () {
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
       
       var modules = bijous.require('private');
-      Object.keys(modules).length.should.be.exactly(3);
+      modules.length.should.be.exactly(3);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        modules.should.have.property(basename);
+
+        var found = findModule(modules, basename);
+        found.should.equal(true);
       });
 
       modules = bijous.require('public');
-      Object.keys(modules).length.should.be.exactly(2);
+      modules.length.should.be.exactly(2);
 
       fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        modules.should.have.property(basename);
+        
+        var found = findModule(modules, basename);
+        found.should.equal(true);
       });
 
       modules = bijous.require('empty');
-      Object.keys(modules).length.should.be.exactly(0);
+      modules.length.should.be.exactly(0);
     });
   });
 
