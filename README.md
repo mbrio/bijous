@@ -3,6 +3,8 @@
 
 [![Build Status](https://travis-ci.org/mbrio/bijous.svg?branch=master)](https://travis-ci.org/mbrio/bijous)
 
+[![NPM Status](https://nodei.co/npm/bijous.png?downloads=true)](https://npmjs.org/package/bijous)
+
 An asynchronous module loader for node.js.
 
 ## Installation
