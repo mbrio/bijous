@@ -1,5 +1,8 @@
 # Bijous
 
+
+[![Build Status](https://travis-ci.org/mbrio/bijous.svg?branch=master)](https://travis-ci.org/mbrio/bijous.svg?branch=master)
+
 An asynchronous module loader for node.js.
 
 ## Installation
