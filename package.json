@@ -31,7 +31,11 @@
     "features",
     "feats",
     "mods",
-    "plugins"
+    "plugins",
+    "async",
+    "asynchronous",
+    "require",
+    "express"
   ],
   "author": "Michael Diolosa <michael.diolosa@gmail.com>",
   "license": "ISC",
