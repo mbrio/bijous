@@ -5,3 +5,10 @@ node_js:
 
 script:
   - npm test
+
+addons:
+  code_climate:
+    repo_token: 53b37904e30ba056fd01f29f
+
+after_script:
+  - cat coverage/lcov.info | codeclimate

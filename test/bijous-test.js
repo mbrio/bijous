@@ -74,7 +74,7 @@ describe('Bijous', function () {
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
       var modules = bijous.list().files();
       
-      modules.length.should.be.exactly(4);
+      modules.length.should.be.exactly(5);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         modules.indexOf(path.join('modules', f)).should.be.above(-1);
@@ -103,7 +103,7 @@ describe('Bijous', function () {
       });
 
       modules = bijous.list('public').files();
-      modules.length.should.be.exactly(1);
+      modules.length.should.be.exactly(2);
 
       fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
         modules.indexOf(path.join('public', f)).should.be.above(-1);
