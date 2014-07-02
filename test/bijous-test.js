@@ -60,17 +60,3 @@ describe('Bijous', function () {
     });
   });
 });
-
-//   // should find all modules
-//   (function () {
-//     var bijous = new Bijous();
-//     var modules = bijous.list().files();
-    
-//     console.log(modules);
-//     assert(modules.length === 2);
-
-//     fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
-//       assert(modules.indexOf(path.join('modules', f)) !== -1);
-//     });
-//   })();
-// })();
