@@ -14,20 +14,21 @@ function Bijous(options) {
   var mod = module.parent || module;
 
   this.cwd = options.cwd || path.dirname(mod.filename);
-  this.modulesPattern = options.modulesPattern || Bijous.defaultModulePattern;
+  this.bundles = options.bundles || Bijous.defaultBundles;
   this.loaded = {};
 }
 
-Bijous.prototype.list = function list() {
+Bijous.prototype.list = function list(bundle) {
   var klect = new Klect({ cwd: this.cwd });
-  return klect.gather(this.modulesPattern);
+  var assets = klect.gather(this.bundles);
+
+  if (bundle) { return assets.bundles(bundle); }
+  else { return assets; }
 };
 
 // Bijous.prototype.load = function load(callback) {
 //   var klect = new Klect({ cwd: this.cwd });
-//   var assets = klect.gather({
-//     bijous: [this.modulesPattern]
-//   });
+//   var assets = klect.gather(this.modulesPattern);
 //   var self = this;
   
 //   var fns = assets.map(function (file) {
@@ -55,6 +56,6 @@ Bijous.prototype.list = function list() {
 //   });
 // };
 
-Bijous.defaultModulePattern = 'modules/*';
+Bijous.defaultBundles = 'modules/*';
 
 exports = module.exports = Bijous;

@@ -24,18 +24,21 @@ describe('Bijous', function () {
     });
   });
 
-  describe('#modulesPattern', function () {
+  describe('#bundles', function () {
     it ('should be the default pattern', function () {
       var bijous = new Bijous();
-      bijous.modulesPattern.should.equal(Bijous.defaultModulePattern);
+      bijous.bundles.should.equal(Bijous.defaultBundles);
     });
 
     it ('should be the pattern specified in options', function () {
-      var modulesPattern = 'modules/!(routes)';
-      modulesPattern.should.not.equal(Bijous.defaultModulePattern);
+      var bundles = {
+        private: 'modules/!(routes)',
+        public: 'public/!(routes)'
+      };
+      bundles.should.not.equal(Bijous.defaultBundles);
 
-      var bijous = new Bijous({ modulesPattern: modulesPattern });
-      bijous.modulesPattern.should.equal(modulesPattern);
+      var bijous = new Bijous({ bundles: bundles });
+      bijous.bundles.should.equal(bundles);
     });
   });
 
@@ -57,6 +60,43 @@ describe('Bijous', function () {
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         modules.indexOf(path.join('modules', f)).should.be.above(-1);
       });
+    });
+
+    it('should find all modules when passed multiple bundles', function () {
+      var bijous = new Bijous({
+        bundles: {
+          private: 'modules/*',
+          public: 'public/*'
+        }
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+      var modules = bijous.list().files();
+      
+      modules.length.should.be.exactly(2);
+
+      fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
+        modules.indexOf(path.join('modules', f)).should.be.above(-1);
+      });
+    });
+
+    it('should find modules pertaining to a specific bundle', function () {
+      var bijous = new Bijous({
+        bundles: {
+          private: 'modules/*',
+          public: 'public/*'
+        }
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+      var modules = bijous.list('private').files();
+      
+      modules.length.should.be.exactly(2);
+
+      fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
+        modules.indexOf(path.join('modules', f)).should.be.above(-1);
+      });
+
+      modules = bijous.list('public').files();
+      modules.length.should.be.exactly(0);
     });
   });
 });
