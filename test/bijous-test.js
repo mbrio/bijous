@@ -115,9 +115,80 @@ describe('Bijous', function () {
   });
 
   describe('#require()', function () {
+    it('should require all modules', function () {
+      var bijous = new Bijous();
+      var modules = bijous.require();
+      Object.keys(modules).length.should.be.exactly(3);
+
+      fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
+        var extname = path.extname(f);
+        var basename = path.basename(f, extname);
+        modules.should.have.property(basename);
+      });
+    });
+
+    it('should require all modules when passed multiple bundles', function () {
+      var bijous = new Bijous({
+        bundles: {
+          private: 'modules/*',
+          public: 'public/*',
+          empty: 'empty/*'
+        }
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+      var modules = bijous.require();
+      Object.keys(modules).length.should.be.exactly(5);
+
+      fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
+        var extname = path.extname(f);
+        var basename = path.basename(f, extname);
+        modules.should.have.property(basename);
+      });
+
+      fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
+        var extname = path.extname(f);
+        var basename = path.basename(f, extname);
+        modules.should.have.property(basename);
+      });
+    });
+
+    it('should require modules pertaining to a specific bundle', function () {
+      var bijous = new Bijous({
+        bundles: {
+          private: 'modules/*',
+          public: 'public/*',
+          empty: 'empty/*'
+        }
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+      
+      var modules = bijous.require('private');
+      Object.keys(modules).length.should.be.exactly(3);
+
+      fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
+        var extname = path.extname(f);
+        var basename = path.basename(f, extname);
+        modules.should.have.property(basename);
+      });
+
+      modules = bijous.require('public');
+      Object.keys(modules).length.should.be.exactly(2);
+
+      fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
+        var extname = path.extname(f);
+        var basename = path.basename(f, extname);
+        modules.should.have.property(basename);
+      });
+
+      modules = bijous.require('empty');
+      Object.keys(modules).length.should.be.exactly(0);
+    });
+  });
+
+  describe('#load()', function () {
     it('should load all modules', function (done) {
       var bijous = new Bijous();
-      bijous.require(function (error, results) {
+      bijous.load(function (error, results) {
         should(error).not.be.ok; // jshint ignore:line
         Object.keys(bijous.modules).length.should.be.exactly(3);
         bijous.modules.module1.name.should.equal('module1');
@@ -137,7 +208,7 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-      bijous.require(function (error, results) {
+      bijous.load(function (error, results) {
         should(error).not.be.ok; // jshint ignore:line
         Object.keys(bijous.modules).length.should.be.exactly(4);
         bijous.modules.module1.name.should.equal('module1');
@@ -160,7 +231,7 @@ describe('Bijous', function () {
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-          bijous.require('private', function (error, results) {
+          bijous.load('private', function (error, results) {
             should(error).not.be.ok; // jshint ignore:line
             Object.keys(bijous.modules).length.should.be.exactly(3);
             bijous.modules.module1.name.should.equal('module1');
@@ -179,7 +250,7 @@ describe('Bijous', function () {
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-          bijous.require('public', function (error, results) {
+          bijous.load('public', function (error, results) {
             should(error).not.be.ok; // jshint ignore:line
             Object.keys(bijous.modules).length.should.be.exactly(1);
             bijous.modules.public1.name.should.equal('public1');
@@ -196,7 +267,7 @@ describe('Bijous', function () {
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
           
-          bijous.require('empty', function (error, results) {
+          bijous.load('empty', function (error, results) {
             should(error).not.be.ok; // jshint ignore:line
             Object.keys(bijous.modules).length.should.be.exactly(0);
             callback(null);
@@ -213,7 +284,7 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-      bijous.require(function (error, results) {
+      bijous.load(function (error, results) {
         should(error).be.ok; // jshint ignore:line
         Object.keys(bijous.modules).length.should.be.exactly(0);
         done();
@@ -227,7 +298,7 @@ describe('Bijous', function () {
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
       try {
-        bijous.require();
+        bijous.load();
         should(false).be.ok; // jshint ignore:line
       } catch (err) {
         err.should.be.ok; // jshint ignore:line

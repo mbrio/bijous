@@ -9,14 +9,37 @@ var Klect = require('klect');
 util.inherits(Bijous, EventEmitter);
 
 /**
- * An asynchronous module loader
+ * @callback Bijous~moduleCallback
+ * @desc The callback used when loading modules to tell {@linkcode Bijous} that the module has completed loading.
+ * @param {object=} error - If an error occurs the callback will receive an error object
+ * @param {*=} results - An object used to represent the module after loading
+ */
+
+/**
+ * @callback Bijous~module
+ * @desc A module to be loaded by {@linkcode Bijous}. Any modules must conform to this protocol. This callback must be
+ * the sole export of the module's entry-point.
+ * @param {Bijous} context - The {@linkcode Bijous} object that is loading the module
+ * @param {Bijous~moduleCallback} done - The callback that alerts {@linkcode Bijous} the async task is complete.
+ * @example
+ * exports = module.exports = function (context, done) {
+ *   done(null, null);
+ * }
+ */
+
+/**
+ * An asynchronous module loader. Searches out {@linkcode Bijous~module|modules} and loads them asynchronously.
  * @class
  * @param {object=} options
  * @param {string=} options.cwd - Override the current working directory
  * @param {object=} options.bundles - Override the [klect]{@link https://github.com/awnist/klect} bundles description
- * @property {string} cwd - The current working directory, used to find modules. Defaults to the directory the module's parent resides in
- * @property {object} bundles - The [klect]{@link https://github.com/awnist/klect} bundles description, used to find modules. Defaults to {@linkcode Bijous#defaultBundles}
- * @property {object} modules - Container for results returned by modules when the {@linkcode Bijous#require} method is called
+ * @property {string} cwd - The current working directory, used to find modules. Defaults to the directory the module's
+ * parent resides in
+ * @property {object} bundles - The [klect]{@link https://github.com/awnist/klect} bundles description, used to find
+ * modules. Defaults to {@linkcode Bijous#defaultBundles}
+ * @property {object} modules - An object containing keys that represent results returned by modules when the
+ * {@linkcode Bijous#load} method is called. The keys correspond with the module's filename, not including the
+ * extension. (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
  */
 function Bijous(options) {
   options = options || {};
@@ -43,19 +66,20 @@ Bijous.prototype.list = function list(bundle) {
 };
 
 /**
- * @callback Bijous~requireCallback
- * @desc Used as a callback override for the {@linkcode Bijous#require} method. If one is specified then error handling
+ * @callback Bijous~loadCallback
+ * @desc Used as a callback override for the {@linkcode Bijous#load} method. If one is specified then error handling
  * becomes it's responsibility. When one is not specified and an error occurs then the error will be thrown.
  * @param {object=} error - If an error occurs the callback will receive an error object
  * @param {*=} results - An array of any objects returned as representations of modules
  */
 
 /**
- * Loads all modules found for it's bundles or a supplied bundle name
+ * Requires all modules found for it's bundles or a supplied bundle name, and executes the async callback defined by the
+ * module
  * @param {string=} bundle - The name of the bundle that should be used when loading modules
- * @param {Bijous~requireCallback=} callback - A callback method to use when all modules are loaded
+ * @param {Bijous~loadCallback=} callback - A callback method to use when all modules are loaded
  */
-Bijous.prototype.require = function load(bundle, callback) {
+Bijous.prototype.load = function load(bundle, callback) {
   if ('function' === typeof bundle) {
     callback = bundle;
     bundle = null;
@@ -86,6 +110,27 @@ Bijous.prototype.require = function load(bundle, callback) {
 
     self.emit('done', self);
   });
+};
+
+/**
+ * Loads all modules found for it's bundles or a supplied bundle name
+ * @param {string=} bundle - The name of the bundle that should be used when requiring modules
+ * @returns {object} - An object containing keys corresponding with the module's filename, not including the extension.
+ * (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
+ */
+Bijous.prototype.require = function req(bundle) {
+  var assets = this.list(bundle);
+  var self = this;
+  var modules = {};
+  
+  assets.files().map(function (file) {
+    var extname = path.extname(file);
+    var basename = path.basename(file, extname);
+
+    modules[basename] = require(path.join(self.cwd, file));
+  });
+
+  return modules;
 };
 
 /**
