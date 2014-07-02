@@ -17,11 +17,12 @@ util.inherits(Bijous, EventEmitter);
 
 /**
  * @callback Bijous~module
- * @desc A module to be loaded by {@linkcode Bijous}. Any modules must conform to this protocol. This callback must be
- * the sole export of the module's entry-point.
+ * @desc A module to be loaded by {@linkcode Bijous}. This callback must be the sole export of the node module's
+ * entry-point.
  * @param {Bijous} context - The {@linkcode Bijous} object that is loading the module
  * @param {Bijous~moduleCallback} done - The callback that alerts {@linkcode Bijous} the async task is complete.
  * @example
+ * // We may assume this resides in a file modules/module1/index.js
  * exports = module.exports = function (context, done) {
  *   done(null, null);
  * }
@@ -85,22 +86,20 @@ Bijous.prototype.load = function load(bundle, callback) {
     bundle = null;
   }
 
-  var assets = this.list(bundle);
+  var modules = this.require(bundle);
+  var moduleKeys = Object.keys(modules);
   var self = this;
-  
-  var fns = assets.files().map(function (file) {
-    var extname = path.extname(file);
-    var basename = path.basename(file, extname);
 
+  var fns = moduleKeys.map(function (key) {
     return function loadAsset(done) {
       var cb = function (error, results) {
-        if (results) { self.modules[basename] = results; }
+        if (results) { self.modules[key] = results; }
 
-        self.emit('loaded', basename, results);
+        self.emit('loaded', key, results);
         done(error, results);
       };
 
-      require(path.join(self.cwd, file)).call(null, self, cb);
+      modules[key].call(null, self, cb);
     };
   });
 
