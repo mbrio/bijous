@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/mbrio/bijous.svg?branch=master)](https://travis-ci.org/mbrio/bijous) [![Dependency Status](https://gemnasium.com/mbrio/bijous.svg)](https://gemnasium.com/mbrio/bijous) [![Code Climate](https://codeclimate.com/github/mbrio/bijous.png)](https://codeclimate.com/github/mbrio/bijous)
 
-[![NPM Status](https://nodei.co/npm/bijous.png?downloads=true)](https://npmjs.org/package/bijous)
+[![NPM Status](https://nodei.co/npm/bijous/coverage.png)](https://npmjs.org/package/bijous)
 
 An asynchronous module loader for node.js.
 
