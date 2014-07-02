@@ -1,0 +1,32 @@
+{
+  "name": "bijous",
+  "version": "0.1.0",
+  "description": "An asynchronous module loader",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^0.9.0",
+    "klect": "git://github.com/mbrio/klect.git"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.5",
+    "gulp-jshint": "^1.6.4",
+    "gulp-mocha": "^0.4.1",
+    "should": "^4.0.4"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mbrio/bijous.git"
+  },
+  "keywords": [
+    "modules"
+  ],
+  "author": "Michael Diolosa <michael.diolosa@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mbrio/bijous/issues"
+  },
+  "homepage": "https://github.com/mbrio/bijous"
+}
