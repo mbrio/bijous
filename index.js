@@ -15,7 +15,7 @@ function Bijous(options) {
 
   this.cwd = options.cwd || path.dirname(mod.filename);
   this.bundles = options.bundles || Bijous.defaultBundles;
-  this.loaded = {};
+  this.modules = {};
 }
 
 Bijous.prototype.list = function list(bundle) {
@@ -26,35 +26,40 @@ Bijous.prototype.list = function list(bundle) {
   else { return assets; }
 };
 
-// Bijous.prototype.load = function load(callback) {
-//   var klect = new Klect({ cwd: this.cwd });
-//   var assets = klect.gather(this.modulesPattern);
-//   var self = this;
+Bijous.prototype.require = function load(bundle, callback) {
+  if ('function' === typeof bundle) {
+    callback = bundle;
+    bundle = null;
+  }
+
+  var assets = this.list(bundle);
+  var self = this;
   
-//   var fns = assets.map(function (file) {
-//     var basename = path.basename(file);
+  var fns = assets.files().map(function (file) {
+    var extname = path.extname(file);
+    var basename = path.basename(file, extname);
 
-//     return function loadAsset(done) {
-//       var cb = function (error, results) {
-//         if (results) {
-//           self.modules[basename] = results;
-//         }
+    return function loadAsset(done) {
+      var cb = function (error, results) {
+        if (results) {
+          self.modules[basename] = results;
+        }
 
-//         self.emit('loaded', basename, results);
-//         done(error, results);
-//       };
+        self.emit('loaded', basename, results);
+        done(error, results);
+      };
 
-//       require(path.join(self.cwd, file)).call(null, self, cb);
-//     };
-//   });
+      require(path.join(self.cwd, file)).call(null, self, cb);
+    };
+  });
 
-//   async.series(fns, function (error, results) {
-//     if (callback) { callback(error, results); }
-//     else if (error) { throw error; }
+  async.series(fns, function (error, results) {
+    if (callback) { callback(error, results); }
+    else if (error) { throw error; }
 
-//     self.emit('done', self);
-//   });
-// };
+    self.emit('done', self);
+  });
+};
 
 Bijous.defaultBundles = 'modules/*';
 

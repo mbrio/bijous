@@ -6,6 +6,7 @@ var path = require('path');
 var assert = require('assert');
 var fs = require('fs');
 var should = require('should');
+var async = require('async');
 var Bijous = require('../index');
 
 describe('Bijous', function () {
@@ -42,10 +43,10 @@ describe('Bijous', function () {
     });
   });
 
-  describe('#loaded', function () {
+  describe('#modules', function () {
     it('should be no loaded modules', function () {
       var bijous = new Bijous();
-      var keys = Object.keys(bijous.loaded);
+      var keys = Object.keys(bijous.modules);
       keys.length.should.be.exactly(0);
     });
   });
@@ -55,7 +56,7 @@ describe('Bijous', function () {
       var bijous = new Bijous();
       var modules = bijous.list().files();
       
-      modules.length.should.be.exactly(2);
+      modules.length.should.be.exactly(3);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         modules.indexOf(path.join('modules', f)).should.be.above(-1);
@@ -66,16 +67,21 @@ describe('Bijous', function () {
       var bijous = new Bijous({
         bundles: {
           private: 'modules/*',
-          public: 'public/*'
+          public: 'public/*',
+          empty: 'empty/*'
         }
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
       var modules = bijous.list().files();
       
-      modules.length.should.be.exactly(2);
+      modules.length.should.be.exactly(4);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         modules.indexOf(path.join('modules', f)).should.be.above(-1);
+      });
+
+      fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
+        modules.indexOf(path.join('public', f)).should.be.above(-1);
       });
     });
 
@@ -83,20 +89,122 @@ describe('Bijous', function () {
       var bijous = new Bijous({
         bundles: {
           private: 'modules/*',
-          public: 'public/*'
+          public: 'public/*',
+          empty: 'empty/*'
         }
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
-      var modules = bijous.list('private').files();
       
-      modules.length.should.be.exactly(2);
+      var modules = bijous.list('private').files();
+      modules.length.should.be.exactly(3);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         modules.indexOf(path.join('modules', f)).should.be.above(-1);
       });
 
       modules = bijous.list('public').files();
+      modules.length.should.be.exactly(1);
+
+      fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
+        modules.indexOf(path.join('public', f)).should.be.above(-1);
+      });
+
+      modules = bijous.list('empty').files();
       modules.length.should.be.exactly(0);
+    });
+  });
+
+  describe('#require()', function () {
+    it('should load all modules', function (done) {
+      var bijous = new Bijous();
+      bijous.require(function (error, results) {
+        should(error).not.be.ok; // jshint ignore:line
+        Object.keys(bijous.modules).length.should.be.exactly(3);
+        bijous.modules.module1.name.should.equal('module1');
+        bijous.modules.module2.name.should.equal('module2');
+        bijous.modules.module3.name.should.equal('module3');
+        done();
+      });
+    });
+
+    it('should load all modules when passed multiple bundles', function (done) {
+      var bijous = new Bijous({
+        bundles: {
+          private: 'modules/*',
+          public: 'public/*',
+          empty: 'empty/*'
+        }
+      });
+      bijous.bundles.should.not.equal(Bijous.defaultBundles);
+
+      bijous.require(function (error, results) {
+        should(error).not.be.ok; // jshint ignore:line
+        Object.keys(bijous.modules).length.should.be.exactly(4);
+        bijous.modules.module1.name.should.equal('module1');
+        bijous.modules.module2.name.should.equal('module2');
+        bijous.modules.module3.name.should.equal('module3');
+        bijous.modules.public1.name.should.equal('public1');
+        done();
+      });
+    });
+
+    it('should load all modules pertaining to a specific bundle', function (done) {
+      async.series([
+        function (callback) {
+          var bijous = new Bijous({
+            bundles: {
+              private: 'modules/*',
+              public: 'public/*',
+              empty: 'empty/*'
+            }
+          });
+          bijous.bundles.should.not.equal(Bijous.defaultBundles);
+
+          bijous.require('private', function (error, results) {
+            should(error).not.be.ok; // jshint ignore:line
+            Object.keys(bijous.modules).length.should.be.exactly(3);
+            bijous.modules.module1.name.should.equal('module1');
+            bijous.modules.module2.name.should.equal('module2');
+            bijous.modules.module3.name.should.equal('module3');
+            callback(null);
+          });
+        },
+        function (callback) {
+          var bijous = new Bijous({
+            bundles: {
+              private: 'modules/*',
+              public: 'public/*',
+              empty: 'empty/*'
+            }
+          });
+          bijous.bundles.should.not.equal(Bijous.defaultBundles);
+
+          bijous.require('public', function (error, results) {
+            should(error).not.be.ok; // jshint ignore:line
+            Object.keys(bijous.modules).length.should.be.exactly(1);
+            bijous.modules.public1.name.should.equal('public1');
+            callback(null);
+          });
+        },
+        function (callback) {
+          var bijous = new Bijous({
+            bundles: {
+              private: 'modules/*',
+              public: 'public/*',
+              empty: 'empty/*'
+            }
+          });
+          bijous.bundles.should.not.equal(Bijous.defaultBundles);
+          
+          bijous.require('empty', function (error, results) {
+            should(error).not.be.ok; // jshint ignore:line
+            Object.keys(bijous.modules).length.should.be.exactly(0);
+            callback(null);
+          });
+        }
+      ], function (err, results) {
+        done(err);
+      });
     });
   });
 });
