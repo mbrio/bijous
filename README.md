@@ -58,3 +58,7 @@ var Bijous = require('bijous');
 var bijous = new Bijous();
 bijous.load();
 ```
+
+## License
+
+ICS &copy; 2014 Michael Diolosa &lt;<michael.diolosa@gmail.com>&gt;

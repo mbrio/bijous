@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "An asynchronous module loader",
   "main": "index.js",
+  "engines" : {
+    "node" : ">=0.10"
+  },
   "dependencies": {
     "async": "^0.9.0",
     "klect": "git://github.com/mbrio/klect.git"
