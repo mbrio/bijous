@@ -45,7 +45,7 @@ util.inherits(Bijous, EventEmitter);
  * @property {string} cwd - The directory where modules can be found. Defaults to the directory the module's
  * parent resides in (path.dirname(module.parent.filename))
  * @property {object} bundles - The [klect]{@link https://github.com/awnist/klect} bundles descriptor, used to find
- * modules. Defaults to {@linkcode Bijous#defaultBundles}
+ * modules. Defaults to {@linkcode Bijous.defaultBundles}
  * @property {object} modules - An object containing keys that represent results returned by modules when the
  * {@linkcode Bijous#load} method is called. The keys correspond with the module's filename, not including the
  * extension. (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
@@ -132,11 +132,26 @@ Bijous.prototype.list = function list(bundle) {
  */
 
 /**
+ * @event Bijous#loaded
+ * @desc Fired every time a module has completed loading
+ * @param {string} name - The name of the module loaded
+ * @param {object} results - An object used to represent the module
+ */
+
+/**
+ * @event Bijous#done
+ * @desc Fired when all modules have completed loading
+ * @param {Bijous} bijous - The {@linkcode Bijous} instance that loaded the modules
+ */
+
+/**
  * Requires all modules found for it's bundles or a specific supplied bundle name, and executes the async callback
  * defined by the {@linkcode Bijous~module|module}. May only be called once, subsequent calls result in an exception.
  * @param {string=} bundle - The name of the bundle that should be used when loading modules, if none is passed it
  * retrieves all bundles' modules
  * @param {Bijous~loadCallback=} callback - A callback method to use when all modules are loaded
+ * @fires Bijous#loaded - Fired every time a module has completed loading
+ * @fires Bijous#done - Fired when all modules have completed loading
  * @example
  * var Bijous = require('bijous');
  *
