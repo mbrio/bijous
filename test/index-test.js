@@ -232,11 +232,14 @@ describe('Bijous', function () {
 
       bijous.load(function (error, results) {
         should(error).not.be.ok; // jshint ignore:line
-        Object.keys(bijous.modules).length.should.be.exactly(4);
-        bijous.modules.module1.name.should.equal('module1');
-        bijous.modules.module2.name.should.equal('module2');
-        bijous.modules.module3.name.should.equal('module3');
-        bijous.modules.public1.name.should.equal('public1');
+        Object.keys(bijous.modules).length.should.be.exactly(2);
+        Object.keys(bijous.modules.private).length.should.be.exactly(3);
+        Object.keys(bijous.modules.public).length.should.be.exactly(1);
+        
+        bijous.modules.private.module1.name.should.equal('module1');
+        bijous.modules.private.module2.name.should.equal('module2');
+        bijous.modules.private.module3.name.should.equal('module3');
+        bijous.modules.public.public1.name.should.equal('public1');
         done();
       });
     });
@@ -255,10 +258,11 @@ describe('Bijous', function () {
 
           bijous.load('private', function (error, results) {
             should(error).not.be.ok; // jshint ignore:line
-            Object.keys(bijous.modules).length.should.be.exactly(3);
-            bijous.modules.module1.name.should.equal('module1');
-            bijous.modules.module2.name.should.equal('module2');
-            bijous.modules.module3.name.should.equal('module3');
+            Object.keys(bijous.modules).length.should.be.exactly(1);
+            Object.keys(bijous.modules.private).length.should.be.exactly(3);
+            bijous.modules.private.module1.name.should.equal('module1');
+            bijous.modules.private.module2.name.should.equal('module2');
+            bijous.modules.private.module3.name.should.equal('module3');
             callback(null);
           });
         },
@@ -275,7 +279,8 @@ describe('Bijous', function () {
           bijous.load('public', function (error, results) {
             should(error).not.be.ok; // jshint ignore:line
             Object.keys(bijous.modules).length.should.be.exactly(1);
-            bijous.modules.public1.name.should.equal('public1');
+            Object.keys(bijous.modules.public).length.should.be.exactly(1);
+            bijous.modules.public.public1.name.should.equal('public1');
             callback(null);
           });
         },

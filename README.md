@@ -29,7 +29,7 @@ npm install && npm test
 
 ## Modules
 
-All modules must conform to the rules set forth by [node](http://nodejs.org/api/modules.html) with the caveat that the module **MUST** export a method that receives a `context` argument and `done` argument. The `context` is a reference to the `Bijous` instance loading the module; and `done` is the callback used when the module has completed loading. The first argument to `done` is an error object and should only be supplied when an error has occurred; the second argument is an object that can be later references by the `Bijous` instance property `modules` which collects the results for each of the modules loaded. The `modules` property references the module loaded by it's filename, if we take the following code as an example and assume the code resides in a file called *modules/server/index.js*:
+All modules must conform to the rules set forth by [node](http://nodejs.org/api/modules.html) with the caveat that the module **MUST** export a method that receives a `context` argument and `done` argument. The `context` is a reference to the `Bijous` instance loading the module; and `done` is the callback used when the module has completed loading. The first argument to `done` is an error object and should only be supplied when an error has occurred; the second argument is an object that can be later references by the `Bijous` instance property `modules` which collects the results for each of the modules loaded. The `modules` property references the module loaded by it's filename and is namespaced by the bundle's name (if no bundle name was specified then no namespace is used), if we take the following code as an example and assume the code resides in a file called *modules/server/index.js*:
 
 ```JavaScript
 var express = require('express');
@@ -44,13 +44,28 @@ exports = module.exports = function (context, done) {
 };
 ```
 
-Then the results from the server module could be accessed via:
+Then the results from the server module could be accessed via if we did not specify a bundle name:
 
 ```JavaScript
 var Bijous = require('bijous');
 var bijous = new Bijous();
 bijous.load(function (error, results) {
   var app = results.server.app;
+  app.use(middleware());
+});
+```
+
+Or if we did specify a bundle name the properties would be namespaced:
+
+```JavaScript
+var Bijous = require('bijous');
+var bijous = new Bijous({
+    bundles: {
+      private: ['modules/*']
+    }
+  });
+bijous.load(function (error, results) {
+  var app = results.private.server.app;
   app.use(middleware());
 });
 ```

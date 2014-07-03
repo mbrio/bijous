@@ -48,25 +48,35 @@ util.inherits(Bijous, EventEmitter);
  * modules. Defaults to {@linkcode Bijous.defaultBundles}
  * @property {object} modules - An object containing keys that represent results returned by modules when the
  * {@linkcode Bijous#load} method is called. The keys correspond with the module's filename, not including the
- * extension. (e.g. modules/module1 would have a key module1 and modules/module2.js would have a key module2)
+ * extension and will be namespaced according to the bundle's name. (e.g. modules/module1 would have a key module1 and
+ * modules/module2.js would have a key module2)
  * @example
  * var Bijous = require('bijous');
  *
  * // Loads all modules
  * var bijous = new Bijous();
- * bijous.load();
+ * bijous.load(function () {
+ *   // Access the results of module1
+ *   console.log(bijous.modules.module1);
+ * });
  *
  * // Overrides the cwd option and loads all modules relative to it
  * var bijous = new Bijous({
  *   cwd: '~/modules'
  * });
- * bijous.load();
+ * bijous.load(function () {
+ *   // Access the results of module1
+ *   console.log(bijous.modules.module1);
+ * });
  *
  * // Overrides the bundles option and loads all modules accordingly
  * var bijous = new Bijous({
  *   bundles: 'modules/!(router)'
  * });
- * bijous.load();
+ * bijous.load(function () {
+ *   // Access the results of module1
+ *   console.log(bijous.modules.module1);
+ * });
  *
  * // Overrides the bundles option with multi bundles and loads all modules
  * // one bundle's modules accordingly
@@ -76,7 +86,12 @@ util.inherits(Bijous, EventEmitter);
  *     web: ['webModules/*', 'adminModules/*']
  *   }
  * });
- * bijous.load('server');
+ * bijous.load(function () {
+ *   // Access the results of module1, notice it is namespaced by the bundle
+ *   // name
+ *   console.log(bijous.modules.server.module1);
+ *   console.log(bijous.modules.web.module2);
+ * });
  */
 function Bijous(options) {
   options = options || {};
@@ -86,6 +101,7 @@ function Bijous(options) {
 
   this.cwd = options.cwd || path.dirname(mod.filename);
   this.bundles = options.bundles || Bijous.defaultBundles;
+  this.defaultBundleName = options.defaultBundleName || '_'
   this.modules = {};
   this._loaded = false;
 }
@@ -109,11 +125,57 @@ function Bijous(options) {
  * var onlyPublicBundles = bijous.list('public');
  */
 Bijous.prototype.list = function list(bundle) {
-  var klect = new Klect({ cwd: this.cwd });
+  var klect = new Klect({ cwd: this.cwd, defaultBundleName: this.defaultBundleName });
   var assets = klect.gather(this.bundles);
 
   if (bundle) { return assets.bundles(bundle); }
-  else { return assets; }
+  else { return assets.bundles(); }
+};
+
+/**
+ * @typedef ModuleDefinition
+ * @desc An object containing the required module definition
+ * @property {string} name - The module's name
+ * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded 
+
+/**
+ * Requires all modules found for it's bundles or a specific supplied bundle name
+ * @param {string=} bundle - The name of the bundle that should be used when requiring modules, if none is passed it
+ * retrieves all bundles' modules
+ * @returns {ModuleDefinition[]} - An array of {@linkcode ModuleDefinition|module} definitions
+ * @example
+ * var Bijous = require('bijous');
+ *
+ * // List all modules
+ * var bijous = new Bijous({
+ *   bundles: {
+ *     public: 'modules/public/*',
+ *     private: 'modules/private/*'
+ *   }
+ * });
+ * var allBundles = bijous.require();
+ * var onlyPublicBundles = bijous.require('public');
+ */
+Bijous.prototype.require = function req(bundle) {
+  var assets = this.list(bundle);
+  var self = this;
+  var modules = [];
+  
+  assets.map(function (asset) {
+    asset.files.map(function (file) {
+      var extname = path.extname(file);
+      var basename = path.basename(file, extname);
+      var module = {
+        name: basename,
+        bundle: asset.name,
+        module: require(path.join(self.cwd, file))
+      };
+
+      modules.push(module);
+    });
+  });
+
+  return modules;
 };
 
 /**
@@ -193,7 +255,17 @@ Bijous.prototype.load = function load(bundle, callback) {
   var fns = modules.map(function (def) {
     return function loadAsset(done) {
       var cb = function (error, results) {
-        if (results) { self.modules[def.name] = results; }
+        if (results) {
+          if (def.bundle === self.defaultBundleName) {
+            self.modules[def.name] = results;
+          } else {
+            if (!self.modules.hasOwnProperty(def.bundle)) {
+              self.modules[def.bundle] = {};
+            }
+
+            self.modules[def.bundle][def.name] = results;
+          }
+        }
 
         self.emit('loaded', def.name, results);
         done(error, results);
@@ -210,49 +282,6 @@ Bijous.prototype.load = function load(bundle, callback) {
 
     self.emit('done', self);
   });
-};
-
-/**
- * @typedef ModuleDefinition
- * @desc An object containing the required module definition
- * @property {string} name - The module's name
- * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded 
-
-/**
- * Requires all modules found for it's bundles or a specific supplied bundle name
- * @param {string=} bundle - The name of the bundle that should be used when requiring modules, if none is passed it
- * retrieves all bundles' modules
- * @returns {ModuleDefinition[]} - An array of {@linkcode ModuleDefinition|module} definitions
- * @example
- * var Bijous = require('bijous');
- *
- * // List all modules
- * var bijous = new Bijous({
- *   bundles: {
- *     public: 'modules/public/*',
- *     private: 'modules/private/*'
- *   }
- * });
- * var allBundles = bijous.require();
- * var onlyPublicBundles = bijous.require('public');
- */
-Bijous.prototype.require = function req(bundle) {
-  var assets = this.list(bundle);
-  var self = this;
-  var modules = [];
-  
-  assets.files().map(function (file) {
-    var extname = path.extname(file);
-    var basename = path.basename(file, extname);
-    var module = {
-      name: basename,
-      module: require(path.join(self.cwd, file))
-    }
-
-    modules.push(module);
-  });
-
-  return modules;
 };
 
 /**
