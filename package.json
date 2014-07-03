@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
-    "klect": "^0.1.1"
+    "klect": "^0.1.2"
   },
   "devDependencies": {
     "gulp": "^3.8.5",
