@@ -9,13 +9,14 @@ var Klect = require('klect');
 util.inherits(Bijous, EventEmitter);
 
 /**
- * @callback Bijous~moduleCallback
- * @desc The callback used when loading modules to tell {@linkcode Bijous} that the module has completed loading.
- * @param {object=} error - If an error occurs the callback will receive an error object
- * @param {*=} results - An object used to represent the module after loading
+ * @callback Bijous~moduleDone
+ * @desc The callback used to alert {@linkcode Bijous} that a module has completed loading.
+ * @param {*=} error - If a breaking error occurs it should be passed as the first parameter
+ * @param {*=} results - An object used to represent the module
  * @example
  * // We may assume this resides in a file modules/module1/index.js
  * exports = module.exports = function (context, done) {
+ *   if (shouldFail) { return done(new Error('some error')); }
  *   done(null, {
  *     moduleData: 'some data'
  *   });
@@ -24,10 +25,10 @@ util.inherits(Bijous, EventEmitter);
 
 /**
  * @callback Bijous~module
- * @desc A module to be loaded by {@linkcode Bijous}. This callback must be the sole export of the node module's
+ * @desc A module to be loaded by {@linkcode Bijous}. This function must be the sole export of the node module's
  * entry-point.
- * @param {Bijous} context - The {@linkcode Bijous} object that is loading the module
- * @param {Bijous~moduleCallback} done - The callback that alerts {@linkcode Bijous} the async task is complete.
+ * @param {Bijous} context - The {@linkcode Bijous} instance loading the module
+ * @param {Bijous~moduleDone} done - The callback used to alert {@linkcode Bijous} that a module has completed loading.
  * @example
  * // We may assume this resides in a file modules/module1/index.js
  * exports = module.exports = function (context, done) {
@@ -41,9 +42,9 @@ util.inherits(Bijous, EventEmitter);
  * @param {object=} options
  * @param {string=} options.cwd - Override the current working directory
  * @param {object=} options.bundles - Override the [klect]{@link https://github.com/awnist/klect} bundles description
- * @property {string} cwd - The current working directory, used to find modules. Defaults to the directory the module's
- * parent resides in
- * @property {object} bundles - The [klect]{@link https://github.com/awnist/klect} bundles description, used to find
+ * @property {string} cwd - The directory where modules can be found. Defaults to the directory the module's
+ * parent resides in (path.dirname(module.parent.filename))
+ * @property {object} bundles - The [klect]{@link https://github.com/awnist/klect} bundles descriptor, used to find
  * modules. Defaults to {@linkcode Bijous#defaultBundles}
  * @property {object} modules - An object containing keys that represent results returned by modules when the
  * {@linkcode Bijous#load} method is called. The keys correspond with the module's filename, not including the
@@ -90,8 +91,9 @@ function Bijous(options) {
 }
 
 /**
- * Retrieves all modules found for it's bundles or a supplied bundle name
- * @param {string=} bundle - The name of the bundle that should be used when retrieving modules
+ * Retrieves all modules found for it's bundles or a specific supplied bundle name
+ * @param {string=} bundle - The name of the bundle that should be used when retrieving modules, if none is passed it
+ * retrieves all bundles' modules
  * @returns {object[]} - An array of [klect]{@link https://github.com/awnist/klect} assets
  * @example
  * var Bijous = require('bijous');
@@ -118,8 +120,8 @@ Bijous.prototype.list = function list(bundle) {
  * @callback Bijous~loadCallback
  * @desc Used as a callback override for the {@linkcode Bijous#load} method. If one is specified then error handling
  * becomes it's responsibility. When one is not specified and an error occurs then the error will be thrown.
- * @param {object=} error - If an error occurs the callback will receive an error object
- * @param {*=} results - An array of any objects returned as representations of modules
+ * @param {*=} error - If an error occurs the callback will receive an error object
+ * @param {*=} results - The {@linkcode Bijous#modules} property is returned
  * @example
  * var Bijous = require('bijous');
  * var bijous = new Bijous();
@@ -130,9 +132,10 @@ Bijous.prototype.list = function list(bundle) {
  */
 
 /**
- * Requires all modules found for it's bundles or a supplied bundle name, and executes the async callback defined by the
- * module. May only be called once.
- * @param {string=} bundle - The name of the bundle that should be used when loading modules
+ * Requires all modules found for it's bundles or a specific supplied bundle name, and executes the async callback
+ * defined by the {@linkcode Bijous~module|module}. May only be called once, subsequent calls result in an exception.
+ * @param {string=} bundle - The name of the bundle that should be used when loading modules, if none is passed it
+ * retrieves all bundles' modules
  * @param {Bijous~loadCallback=} callback - A callback method to use when all modules are loaded
  * @example
  * var Bijous = require('bijous');
@@ -186,7 +189,7 @@ Bijous.prototype.load = function load(bundle, callback) {
   });
 
   async.series(fns, function (error, results) {
-    if (callback) { callback(error, results); }
+    if (callback) { callback(error, self.modules); }
     /* istanbul ignore next */
     else if (error) { throw error; }
 
@@ -201,8 +204,9 @@ Bijous.prototype.load = function load(bundle, callback) {
  * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded 
 
 /**
- * Requires all modules found for it's bundles or a supplied bundle name
- * @param {string=} bundle - The name of the bundle that should be used when requiring modules
+ * Requires all modules found for it's bundles or a specific supplied bundle name
+ * @param {string=} bundle - The name of the bundle that should be used when requiring modules, if none is passed it
+ * retrieves all bundles' modules
  * @returns {ModuleDefinition[]} - An array of {@linkcode ModuleDefinition|module} definitions
  * @example
  * var Bijous = require('bijous');

@@ -47,18 +47,12 @@ exports = module.exports = function (context, done) {
 Then the results from the server module could be accessed via:
 
 ```JavaScript
-var app = bijous.modules.server.app;
-app.use(middleware());
-```
-
-## Usage
-
-The following code will load all modules within the `modules` folder.
-
-```JavaScript
 var Bijous = require('bijous');
 var bijous = new Bijous();
-bijous.load();
+bijous.load(function (error, results) {
+  var app = results.server.app;
+  app.use(middleware());
+});
 ```
 
 ## License

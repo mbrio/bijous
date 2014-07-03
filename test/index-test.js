@@ -213,6 +213,9 @@ describe('Bijous', function () {
         bijous.modules.module1.name.should.equal('module1');
         bijous.modules.module2.name.should.equal('module2');
         bijous.modules.module3.name.should.equal('module3');
+
+        results.module1.name.should.equal('module1');
+        
         done();
       });
     });
