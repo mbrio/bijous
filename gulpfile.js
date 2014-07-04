@@ -6,7 +6,7 @@ var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
 var jsdoc = require('gulp-jsdoc');
 
-var srcFiles = ['./index.js'];
+var srcFiles = ['./lib/bijous.js'];
 
 gulp.task('lint', function gulpLint() {
   return gulp.src(['./*.js', './test/**/*.js'])

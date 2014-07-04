@@ -7,7 +7,7 @@ var assert = require('assert');
 var fs = require('fs');
 var should = require('should');
 var async = require('async');
-var Bijous = require('../index');
+var Bijous = require('../lib/bijous');
 
 function findModule(modules, name) {
   var found = false;
@@ -201,6 +201,7 @@ describe('Bijous', function () {
       var bijous = new Bijous();
       bijous.load(function (error, modules) {
         should(error).not.be.ok; // jshint ignore:line
+        console.log(modules);
         Object.keys(modules).length.should.be.exactly(3);
         modules.module1.name.should.equal('module1');
         modules.module2.name.should.equal('module2');
