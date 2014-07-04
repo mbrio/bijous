@@ -12,7 +12,7 @@ util.inherits(Bijous, EventEmitter);
  * @callback Bijous~moduleDone
  * @desc The callback used to alert {@linkcode Bijous} that a module has completed loading.
  * @param {*=} error - If a breaking error occurs it should be passed as the first parameter
- * @param {*=} results - An object used to represent the module
+ * @param {*=} result - An object used to represent the module
  * @example
  * // We may assume this resides in a file modules/module1/index.js
  * exports = module.exports = function (context, done) {
@@ -28,6 +28,7 @@ util.inherits(Bijous, EventEmitter);
  * @desc A module to be loaded by {@linkcode Bijous}. This function must be the sole export of the node module's
  * entry-point.
  * @param {Bijous} context - The {@linkcode Bijous} instance loading the module
+ * @param {object=} context - The {@linkcode Bijous} instance loading the module
  * @param {Bijous~moduleDone} done - The callback used to alert {@linkcode Bijous} that a module has completed loading.
  * @example
  * // We may assume this resides in a file modules/module1/index.js
@@ -102,8 +103,6 @@ function Bijous(options) {
   this.cwd = options.cwd || path.dirname(mod.filename);
   this.bundles = options.bundles || Bijous.defaultBundles;
   this.defaultBundleName = options.defaultBundleName || '_'
-  this.modules = {};
-  this._loaded = false;
 }
 
 /**
@@ -136,7 +135,7 @@ Bijous.prototype.list = function list(bundle) {
  * @typedef ModuleDefinition
  * @desc An object containing the required module definition
  * @property {string} name - The module's name
- * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded 
+ * @property {Bijous~module} module - The {@linkcode Bijous~module|module} to be loaded
 
 /**
  * Requires all modules found for it's bundles or a specific supplied bundle name
@@ -160,7 +159,7 @@ Bijous.prototype.require = function req(bundle) {
   var assets = this.list(bundle);
   var self = this;
   var modules = [];
-  
+
   assets.map(function (asset) {
     asset.files.map(function (file) {
       var extname = path.extname(file);
@@ -234,58 +233,67 @@ Bijous.prototype.require = function req(bundle) {
  *
  * // Loads only modules belonging to the module1 bundle and executes a callback
  * // once all are loaded
- * bijous = new Bijous({ bundles: { module1: ['modules/module1'] }});
- * bijous.load('module1', function (error, results) {
+ * bijous = new Bijous({ bundles: { bundle1: ['modules/module1'] }});
+ * bijous.load('bundle1', function (error, modules) {
  *   if (error) { throw error; }
- *   console.log(results);
+ *   console.log(modules.bundle1.module1);
  * });
  */
 Bijous.prototype.load = function load(bundle, callback) {
-  if (this._loaded === true) { throw new Error('You may only call Bijous#load once.'); }
-  this._loaded = true;
-
+  // both bundle and callback are optional parameters
   if ('function' === typeof bundle) {
     callback = bundle;
     bundle = null;
   }
 
+  // Get all required modules
   var modules = this.require(bundle);
+
+  // Collection for module results
+  var results = {};
   var self = this;
 
+  // Generate callbacks used for our async series
   var fns = modules.map(function (def) {
-    return function loadAsset(done) {
-      var cb = function (error, results) {
-        if (results) {
+    // Loads each module and collects the results
+    return function loadModule(done) {
+      // Wrapper callback used for module loading
+      var cb = function (error, result) {
+        // If we have a result, collect them
+        if (result) {
+          // Do not use a namespace if the bundle name is Klect's default name
           if (def.bundle === self.defaultBundleName) {
-            self.modules[def.name] = results;
+            results[def.name] = result;
+          // Otherwise namespace the results
           } else {
-            if (!self.modules.hasOwnProperty(def.bundle)) {
-              self.modules[def.bundle] = {};
-            }
-
-            self.modules[def.bundle][def.name] = results;
+            results[def.bundle] = results[def.bundle] || {};
+            results[def.bundle][def.name] = result;
           }
         }
 
+        // We are done loading the module
         self.emit('loaded', def.name, results);
-        done(error, results);
+        done(error);
       };
 
-      def.module.call(null, self, cb);
+      // Begin loading the module
+      def.module.call(null, self, results, cb);
     };
   });
 
-  async.series(fns, function (error, results) {
-    if (callback) { callback(error, self.modules); }
-    /* istanbul ignore next */
-    else if (error) { throw error; }
+  // Begin our async loading of all modules
+  async.series(fns, function (error) {
+    if (callback) { callback(error, results); }
 
-    self.emit('done', self);
+    // If no callback has been passed and an error occurred, emit the error
+    // event
+    if (error && !callback) { self.emit('error', error); }
+    else if (!error) { self.emit('done', results); }
   });
 };
 
 /**
- * The default bundles definition, confirms to [klect]{@link https://github.com/awnist/klect} bundles
+ * The default bundles definition, conforms to [klect]{@link https://github.com/awnist/klect} bundles
  */
 Bijous.defaultBundles = 'modules/*';
 

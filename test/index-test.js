@@ -52,19 +52,11 @@ describe('Bijous', function () {
     });
   });
 
-  describe('#modules', function () {
-    it('should be no loaded modules', function () {
-      var bijous = new Bijous();
-      var keys = Object.keys(bijous.modules);
-      keys.length.should.be.exactly(0);
-    });
-  });
-
   describe('#list()', function () {
     it('should find all modules', function () {
       var bijous = new Bijous();
       var modules = bijous.list().files();
-      
+
       modules.length.should.be.exactly(3);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
@@ -82,7 +74,7 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
       var modules = bijous.list().files();
-      
+
       modules.length.should.be.exactly(5);
 
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
@@ -103,7 +95,7 @@ describe('Bijous', function () {
         }
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
-      
+
       var modules = bijous.list('private').files();
       modules.length.should.be.exactly(3);
 
@@ -132,7 +124,7 @@ describe('Bijous', function () {
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        
+
         var found = findModule(modules, basename);
         found.should.equal(true);
       });
@@ -153,7 +145,7 @@ describe('Bijous', function () {
       fs.readdirSync(path.join(__dirname, 'modules')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        
+
         var found = findModule(modules, basename);
         found.should.equal(true);
       });
@@ -161,7 +153,7 @@ describe('Bijous', function () {
       fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        
+
         var found = findModule(modules, basename);
         found.should.equal(true);
       });
@@ -176,7 +168,7 @@ describe('Bijous', function () {
         }
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
-      
+
       var modules = bijous.require('private');
       modules.length.should.be.exactly(3);
 
@@ -194,7 +186,7 @@ describe('Bijous', function () {
       fs.readdirSync(path.join(__dirname, 'public')).map(function (f) {
         var extname = path.extname(f);
         var basename = path.basename(f, extname);
-        
+
         var found = findModule(modules, basename);
         found.should.equal(true);
       });
@@ -207,15 +199,13 @@ describe('Bijous', function () {
   describe('#load()', function () {
     it('should load all modules', function (done) {
       var bijous = new Bijous();
-      bijous.load(function (error, results) {
+      bijous.load(function (error, modules) {
         should(error).not.be.ok; // jshint ignore:line
-        Object.keys(bijous.modules).length.should.be.exactly(3);
-        bijous.modules.module1.name.should.equal('module1');
-        bijous.modules.module2.name.should.equal('module2');
-        bijous.modules.module3.name.should.equal('module3');
+        Object.keys(modules).length.should.be.exactly(3);
+        modules.module1.name.should.equal('module1');
+        modules.module2.name.should.equal('module2');
+        modules.module3.name.should.equal('module3');
 
-        results.module1.name.should.equal('module1');
-        
         done();
       });
     });
@@ -230,16 +220,16 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-      bijous.load(function (error, results) {
+      bijous.load(function (error, modules) {
         should(error).not.be.ok; // jshint ignore:line
-        Object.keys(bijous.modules).length.should.be.exactly(2);
-        Object.keys(bijous.modules.private).length.should.be.exactly(3);
-        Object.keys(bijous.modules.public).length.should.be.exactly(1);
-        
-        bijous.modules.private.module1.name.should.equal('module1');
-        bijous.modules.private.module2.name.should.equal('module2');
-        bijous.modules.private.module3.name.should.equal('module3');
-        bijous.modules.public.public1.name.should.equal('public1');
+        Object.keys(modules).length.should.be.exactly(2);
+        Object.keys(modules.private).length.should.be.exactly(3);
+        Object.keys(modules.public).length.should.be.exactly(1);
+
+        modules.private.module1.name.should.equal('module1');
+        modules.private.module2.name.should.equal('module2');
+        modules.private.module3.name.should.equal('module3');
+        modules.public.public1.name.should.equal('public1');
         done();
       });
     });
@@ -256,13 +246,13 @@ describe('Bijous', function () {
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-          bijous.load('private', function (error, results) {
+          bijous.load('private', function (error, modules) {
             should(error).not.be.ok; // jshint ignore:line
-            Object.keys(bijous.modules).length.should.be.exactly(1);
-            Object.keys(bijous.modules.private).length.should.be.exactly(3);
-            bijous.modules.private.module1.name.should.equal('module1');
-            bijous.modules.private.module2.name.should.equal('module2');
-            bijous.modules.private.module3.name.should.equal('module3');
+            Object.keys(modules).length.should.be.exactly(1);
+            Object.keys(modules.private).length.should.be.exactly(3);
+            modules.private.module1.name.should.equal('module1');
+            modules.private.module2.name.should.equal('module2');
+            modules.private.module3.name.should.equal('module3');
             callback(null);
           });
         },
@@ -276,11 +266,11 @@ describe('Bijous', function () {
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-          bijous.load('public', function (error, results) {
+          bijous.load('public', function (error, modules) {
             should(error).not.be.ok; // jshint ignore:line
-            Object.keys(bijous.modules).length.should.be.exactly(1);
-            Object.keys(bijous.modules.public).length.should.be.exactly(1);
-            bijous.modules.public.public1.name.should.equal('public1');
+            Object.keys(modules).length.should.be.exactly(1);
+            Object.keys(modules.public).length.should.be.exactly(1);
+            modules.public.public1.name.should.equal('public1');
             callback(null);
           });
         },
@@ -293,10 +283,10 @@ describe('Bijous', function () {
             }
           });
           bijous.bundles.should.not.equal(Bijous.defaultBundles);
-          
-          bijous.load('empty', function (error, results) {
+
+          bijous.load('empty', function (error, modules) {
             should(error).not.be.ok; // jshint ignore:line
-            Object.keys(bijous.modules).length.should.be.exactly(0);
+            Object.keys(modules).length.should.be.exactly(0);
             callback(null);
           });
         }
@@ -311,40 +301,60 @@ describe('Bijous', function () {
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-      bijous.load(function (error, results) {
+      bijous.load(function (error, modules) {
         error.should.be.ok; // jshint ignore:line
-        Object.keys(bijous.modules).length.should.be.exactly(0);
+        Object.keys(modules).length.should.be.exactly(0);
         done();
       });
     });
+  });
 
-    it('should load all modules and throw errors without callback', function (done) {
+  describe('#loaded', function () {
+    it ('should emit the loaded event', function (done) {
+      var bijous = new Bijous();
+      var loadedCount = 0;
+
+      bijous.on('loaded', function () { loadedCount++; });
+
+      bijous.load(function (error, modules) {
+        should(error).not.be.ok; // jshint ignore:line
+        loadedCount.should.equal(3);
+
+        done();
+      });
+    });
+  });
+
+  describe('#done', function () {
+    it ('should emit the done event', function (done) {
+      var bijous = new Bijous();
+
+      bijous.on('done', function (modules) {
+        Object.keys(modules).length.should.be.exactly(3);
+        modules.module1.name.should.equal('module1');
+        modules.module2.name.should.equal('module2');
+        modules.module3.name.should.equal('module3');
+
+        done();
+      });
+
+      bijous.load();
+    });
+  });
+
+  describe('#error', function () {
+    it('should emit the error event', function (done) {
       var bijous = new Bijous({
         bundles: 'errors/*'
       });
       bijous.bundles.should.not.equal(Bijous.defaultBundles);
 
-      try {
-        bijous.load();
-
-        false.should.be.equal(true);
-      } catch (err) {
+      bijous.on('error', function (err) {
         err.message.should.equal('error1');
         done();
-      }
-    });
+      });
 
-    it('should not allow to be called multiple times', function (done) {
-      var bijous = new Bijous();
       bijous.load();
-
-      try {
-        bijous.load();
-        false.should.not.equal(true);
-      } catch (err) {
-        err.message.should.equal('You may only call Bijous#load once.');
-        done();
-      }
     });
   });
 });
