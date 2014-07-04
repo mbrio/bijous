@@ -26,13 +26,13 @@ getModuleName = (file) ->
 # Examples
 #
 #   Bijous = require 'bijous'
-#
 #   # Loads all modules
 #   bijous = new Bijous
 #   bijous.load (err, modules) ->
 #     # Access the results of module1
 #     console.log modules.module1
 #
+#   Bijous = require 'bijous'
 #   # Overrides the cwd option and loads all modules relative to it
 #   bijous = new Bijous
 #     cwd: '~/modules'
@@ -40,6 +40,7 @@ getModuleName = (file) ->
 #     # Access the results of module1
 #     console.log modules.module1
 #
+#   Bijous = require 'bijous'
 #   # Overrides the bundles option and loads all modules accordingly
 #   bijous = new Bijous
 #     bundles: 'modules/!(router)'
@@ -47,6 +48,7 @@ getModuleName = (file) ->
 #     # Access the results of module1
 #     console.log modules.module1
 #
+#   Bijous = require 'bijous'
 #   # Overrides the bundles option with multi bundles and loads all modules
 #   # one bundle's modules accordingly
 #   bijous = new Bijous
