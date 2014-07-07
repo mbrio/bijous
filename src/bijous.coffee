@@ -5,9 +5,9 @@ _ = require 'lodash'
 {EventEmitter} = require 'events'
 Klect = require 'klect'
 
-# Internal: Gets a module's name based off of it's path.
+# Public: Determines a module's name using it's path.
 #
-# file - The path of the file as {String}
+# file - The path of the file as a {String}
 #
 # ```coffee
 # getModuleName('/modules/module1.js')
@@ -19,12 +19,23 @@ getModuleName = (file) ->
   extname = path.extname file
   path.basename file, extname
 
-# Internal: Loads a singular module. Handles populating the module's result
-# object. Emits the `loaded` event when a module is successfully loaded. The
-# `loaded` event handler receives three parameters, the module's name, the
-# bundle's name, and the module's results.
+
+# Public: Loads a singular module as described by {Bijous}. Handles populating
+# the module's result object.
 #
-# Returns nothing
+# def     - The module's definition as an {Object} with the following keys:
+#           :name - The module's name
+#           :bundle - The bundle's name
+#           :module - The module's load function
+# results - The results of all previously loaded modules as an {Object}
+# done    - Alerts bijous when the module has loaded, is a {Function}, the first
+#           argument will be an {Error} if one has occurred.
+#
+# Returns: `undefined`
+# Emits loaded when a module has successfully loaded. The first argument will be
+#   a {String} representing the module's name, the second argument will be a
+#   {String} representing the bundle's name, the third argument will be an
+#   {Object} containing the results of the module's execution.
 loadModule = (def, results, done) ->
   def.module.call null, @, results, (error, result) =>
     if result
@@ -46,13 +57,14 @@ loadModule = (def, results, done) ->
 # in much the same ways. What bijous adds is the ability to `load` and `require`
 # modules conforming to [node.js](http://nodejs.org/api/modules.html). Modules
 # used in this way must conform to bijous' module interface which is described
-# as a node module exporting a singular function that receives three parameters
-# corresponding to the `bijous` object loading the module, the currently
-# returned `results` from previously loaded modules, and the `callback` that
-# alerts bijous that the module has completed loading. The `callback` function
-# receives two parameters that correspond to any errors that have
-# occurred, and can optionally return an object that represents the result of
-# the module.
+# as a node module exporting a singular function with three arguments. The
+# first argument will be the {Bijous} instance loading the module, the second
+# argument will be an {Object} containing the results from previously loaded
+# modules, and the third argument will be a {Function} callback that alerts the
+# bijous instance when the module has completed loading. The callback function
+# has two arguments, the first argument will be an {Error} if one has occurred,
+# the second argument will be an optional {Object} containing pertinent results
+# from loading the module.
 #
 # ```coffee
 # # We can assume that the following four lines describes the module being
@@ -108,12 +120,13 @@ loadModule = (def, results, done) ->
 # ```
 class Bijous extends EventEmitter
   # Public: The default bundle configuration for klect. This configuration
-  # describes how all modules are to be found. (default: `modules/*`).
+  # describes how all modules are to be found. (default: `modules/*`). For more
+  # information see [klect](https://github.com/awnist/klect).
   @defaultBundles: 'modules/*'
 
   # Public: The default bundle name to pass to klect. When a bundle descriptor
   # is passed from bijous to klect that is not an object (e.g. a string or
-  # an array) this is the name that is used for the bundle. Bundle results that
+  # an array) this is the name used for the bundle. Bundle results that
   # bear it's name are not namespaced when received from the `load` callback.
   # (default: `_`)
   #
@@ -149,7 +162,7 @@ class Bijous extends EventEmitter
     @defaultBundleName ?= Bijous.defaultBundleName
 
   # Public: Retrieves all modules found for it's bundles. When a bundle name is
-  # supplied it only retrieves files for the specified bundle.
+  # supplied it retrieves files only for the specified bundle.
   #
   # bundle - The bundle name to use when retrieving modules. (optional)
   #
@@ -175,7 +188,7 @@ class Bijous extends EventEmitter
     klect.gather(@bundles).bundles bundle
 
   # Public: Calls node's `require` function for all module files found for it's
-  # bundles. When a bundle name is supplied it only calls `require` with files
+  # bundles. When a bundle name is supplied it calls `require` with files only
   # for the specified bundle.
   #
   # bundle - The bundle name to use when retrieving modules. (optional)
@@ -193,10 +206,10 @@ class Bijous extends EventEmitter
   # onlyPublicBundles = bijous.require 'public'
   # ```
   #
-  # Returns the modules exported by calling `require` on each of the bundle
-  #   files; each module object contains a module's `name`, the corresponding
-  #   bundle's name, and the `module` returned by calling node's `require`
-  #   function on the module's file.
+  # Returns an {Array} of {Object}s with the keys:
+  #   :name - The module's name
+  #   :bundle - The bundle's name
+  #   :module - The module callback function as described in {Bijous}
   require: (bundle) ->
     _.flatten @list(bundle).map (asset) =>
       asset.files.map (file) =>
@@ -206,14 +219,7 @@ class Bijous extends EventEmitter
 
   # Public: Calls node's `require` function for all module files found for it's
   # bundles, and executes the returned module function. When a bundle name is
-  # supplied it only loads the files for the specified bundle. Once all bundles
-  # are loaded bijous will emit either an `error` event, if any have occurred,
-  # or a `done` event which receives the results of all the modules.
-  #
-  # The `done` event could be subscribed to by the loaded module in order to
-  # execute a task once all modules are loaded. An example would be for a
-  # *server* module that creates an express web server to startup once all
-  # modules are loaded.
+  # supplied it loads the files only for the specified bundle.
   #
   # bundle - The bundle name to use when retrieving modules. (optional)
   # callback - The callback function to use when all modules are loaded. The
@@ -221,7 +227,7 @@ class Bijous extends EventEmitter
   #            errors that have occurred, the second contains the results of all
   #            of the loaded modules.
   #
-  # ```atom
+  # ```coffee
   # Bijous = require 'bijous'
   #
   # # Loads all modules
@@ -253,7 +259,15 @@ class Bijous extends EventEmitter
   #   console.log modules.bundle1.module1
   # ```
   #
-  # Returns nothing
+  # Returns `undefined`
+  # Emits error if an error has occurred while loading any module. The first
+  #   argument will be the {Error} that has occurred
+  # Emits done when loading of modules has completed and no error has occurred.
+  #   The first argument will be an {Object} containing the results of all
+  #   loaded modules. The `done` event could be subscribed to by the loaded
+  #   module in order to execute a task once all modules are loaded. An example
+  #   would be if a *server* module wanted to listen for connections once all
+  #   modules were loaded.
   load: (bundle, callback) ->
     [callback, bundle] = [bundle, null] if 'function' == typeof bundle
     results = {}
