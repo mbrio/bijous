@@ -9,10 +9,10 @@ Klect = require 'klect'
 #
 # file - The path of the file
 #
-# Examples
-#
-#   getModuleName('/modules/module1.js')
-#   # => 'module1'
+# ```coffee
+# getModuleName('/modules/module1.js')
+# # => 'module1'
+# ```
 #
 # Returns the module's name without extension
 getModuleName = (file) ->
@@ -40,6 +40,8 @@ loadModule = (def, results, done) ->
 # system using [Klect](https://github.com/awnist/klect) and supplies an
 # asynchronous means of initializing them.
 #
+# ## Module Definition
+#
 # Bijous modules are synonymous with klect bundles and can be retrieved and used
 # in much the same ways. What bijous adds is the ability to `load` and `require`
 # modules conforming to [node.js](http://nodejs.org/api/modules.html). Modules
@@ -52,52 +54,58 @@ loadModule = (def, results, done) ->
 # occurred, and can optionally return an object that represents the result of
 # the module.
 #
-# Examples
+# ```coffee
+# # We can assume that the following four lines describes the module being
+# # loaded and resides in a file called *modules/mobule1.coffee*
+# exports = module.exports = (context, modules, done) ->
+#   # do something ...
+#   done null,
+#     app: express()
+# ```
 #
-#   # We can assume that the following four lines describes the module being
-#   # loaded and resides in a file called *modules/mobule1.coffee*
-#   exports = module.exports = (context, modules, done) ->
-#     # do something ...
-#     done null,
-#       app: express()
+# ## Module Loading
 #
-#   # We can assume the rest of the code below lives in a separate file that
-#   # has access to the module specified above
-#   Bijous = require 'bijous'
-#   # Loads all modules
-#   bijous = new Bijous
-#   bijous.load (err, modules) ->
-#     # Access the results of module1
-#     console.log modules.module1
+# ```coffee
+# # We can assume the rest of the code below lives in a separate file that
+# # has access to the module specified above
+# Bijous = require 'bijous'
 #
-#   Bijous = require 'bijous'
-#   # Overrides the cwd option and loads all modules relative to it
-#   bijous = new Bijous
-#     cwd: '~/modules'
-#   bijous.load (err, modules) ->
-#     # Access the results of module1
-#     console.log modules.module1
+# # Loads all modules
+# bijous = new Bijous
 #
-#   Bijous = require 'bijous'
-#   # Overrides the bundles option and loads all modules accordingly
-#   bijous = new Bijous
-#     bundles: 'modules/!(router)'
-#   bijous.load (modules) ->
-#     # Access the results of module1
-#     console.log modules.module1
+# bijous.load (err, modules) ->
+#   # Access the results of module1
+#   console.log modules.module1
 #
-#   Bijous = require 'bijous'
-#   # Overrides the bundles option with multi bundles and loads all modules
-#   # one bundle's modules accordingly
-#   bijous = new Bijous
-#     bundles:
-#       server: 'modules/!(router)'
-#       web: ['webModules/*', 'adminModules/*']
-#   bijous.load (err, modules) ->
-#     # Access the results of module1, notice it is namespaced by the bundle
-#     # name
-#     console.log modules.server.module1
-#     console.log modules.web.module2
+# # Overrides the cwd option and loads all modules relative to it
+# bijous = new Bijous
+#   cwd: '~/modules'
+#
+# bijous.load (err, modules) ->
+#   # Access the results of module1
+#   console.log modules.module1
+#
+# # Overrides the bundles option and loads all modules accordingly
+# bijous = new Bijous
+#   bundles: 'modules/!(router)'
+#
+# bijous.load (modules) ->
+#   # Access the results of module1
+#   console.log modules.module1
+#
+# # Overrides the bundles option with multi bundles and loads all modules
+# # one bundle's modules accordingly
+# bijous = new Bijous
+#   bundles:
+#     server: 'modules/!(router)'
+#     web: ['webModules/*', 'adminModules/*']
+#
+# bijous.load (err, modules) ->
+#   # Access the results of module1, notice it is namespaced by the bundle
+#   # name
+#   console.log modules.server.module1
+#   console.log modules.web.module2
+# ```
 class Bijous extends EventEmitter
   # Public: The default bundle configuration for klect. This configuration
   # describes how all modules are to be found. (default: `modules/*`).
@@ -109,15 +117,17 @@ class Bijous extends EventEmitter
   # bear it's name are not namespaced when received from the `load` callback.
   # (default: `_`)
   #
-  # Examples
+  # ```coffee
+  # Bijous = require 'bijous'
   #
-  #   Bijous = require 'bijous'
-  #   bijous = new Bijous
-  #     bundles: 'modules/!(router)'
-  #   bijous.load (err, modules) ->
-  #     # Since our bundle does not have a name the default bundle name is used
-  #     # and it's results are not namespaced
-  #     console.log modules.module1
+  # bijous = new Bijous
+  #   bundles: 'modules/!(router)'
+  #
+  # bijous.load (err, modules) ->
+  #   # Since our bundle does not have a name the default bundle name is used
+  #   # and it's results are not namespaced
+  #   console.log modules.module1
+  # ```
   @defaultBundleName: '_'
 
   # Public: Instantiates a new bijous loader.
@@ -143,16 +153,18 @@ class Bijous extends EventEmitter
   #
   # bundle - The bundle name to use when retrieving modules. (optional)
   #
-  # Examples
+  # ```coffee
+  # Bijous = require 'bijous'
   #
-  #   Bijous = require 'bijous'
-  #   # List all modules
-  #   bijous = new Bijous
-  #     bundles:
-  #       public: 'modules/public/*'
-  #       private: 'modules/private/*'
-  #   allBundles = bijous.list()
-  #   onlyPublicBundles = bijous.list 'public'
+  # # List all modules
+  # bijous = new Bijous
+  #   bundles:
+  #     public: 'modules/public/*'
+  #     private: 'modules/private/*'
+  #
+  # allBundles = bijous.list()
+  # onlyPublicBundles = bijous.list 'public'
+  # ```
   #
   # Returns an array of klect bundles
   list: (bundle) ->
@@ -168,17 +180,18 @@ class Bijous extends EventEmitter
   #
   # bundle - The bundle name to use when retrieving modules. (optional)
   #
-  # Examples
+  # ```coffee
+  # Bijous = require 'bijous'
   #
-  #   Bijous = require 'bijous'
-  #   # Require all modules
-  #   bijous = new Bijous
-  #     bundles:
-  #       public: 'modules/public/*'
-  #       private: 'modules/private/*'
+  # # Require all modules
+  # bijous = new Bijous
+  #   bundles:
+  #     public: 'modules/public/*'
+  #     private: 'modules/private/*'
   #
-  #   allBundles = bijous.require()
-  #   onlyPublicBundles = bijous.require 'public'
+  # allBundles = bijous.require()
+  # onlyPublicBundles = bijous.require 'public'
+  # ```
   #
   # Returns the modules exported by calling `require` on each of the bundle
   #   files; each module object contains a module's `name`, the corresponding
@@ -208,36 +221,37 @@ class Bijous extends EventEmitter
   #            errors that have occurred, the second contains the results of all
   #            of the loaded modules.
   #
-  # Examples
+  # ```atom
+  # Bijous = require 'bijous'
   #
-  #   Bijous = require 'bijous'
-  #   # Loads all modules
-  #   bijous = new Bijous
-  #   bijous.load()
+  # # Loads all modules
+  # bijous = new Bijous
+  # bijous.load()
   #
-  #   Bijous = require 'bijous'
-  #   # Loads only modules belonging to the module1 bundle
-  #   bijous = new Bijous
-  #     bundles:
-  #       module1: ['modules/module1']
-  #   bijous.load 'module1'
+  # # Loads only modules belonging to the module1 bundle
+  # bijous = new Bijous
+  #   bundles:
+  #     module1: ['modules/module1']
   #
-  #   Bijous = require 'bijous'
-  #   # Loads all modules and executes a callback once all are loaded
-  #   bijous = new Bijous
-  #   bijous.load (error, results) ->
-  #     throw error if error
-  #     console.log results
+  # bijous.load 'module1'
   #
-  #   Bijous = require 'bijous'
-  #   # Loads only modules belonging to the *module1* bundle and executes a
-  #   # callback once all are loaded
-  #   bijous = new Bijous
-  #     bundles:
-  #       bundle1: ['modules/module1']
-  #   bijous.load 'bundle1', (error, modules) ->
-  #     throw error if error
-  #     console.log modules.bundle1.module1
+  # # Loads all modules and executes a callback once all are loaded
+  # bijous = new Bijous
+  #
+  # bijous.load (error, results) ->
+  #   throw error if error
+  #   console.log results
+  #
+  # # Loads only modules belonging to the *module1* bundle and executes a
+  # # callback once all are loaded
+  # bijous = new Bijous
+  #   bundles:
+  #     bundle1: ['modules/module1']
+  #
+  # bijous.load 'bundle1', (error, modules) ->
+  #   throw error if error
+  #   console.log modules.bundle1.module1
+  # ```
   #
   # Returns nothing
   load: (bundle, callback) ->
