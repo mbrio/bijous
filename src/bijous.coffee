@@ -7,14 +7,14 @@ Klect = require 'klect'
 
 # Internal: Gets a module's name based off of it's path.
 #
-# file - The path of the file
+# file - The path of the file as {String}
 #
 # ```coffee
 # getModuleName('/modules/module1.js')
 # # => 'module1'
 # ```
 #
-# Returns the module's name without extension
+# Returns: A {String} representing the module's name without extension
 getModuleName = (file) ->
   extname = path.extname file
   path.basename file, extname
@@ -258,7 +258,8 @@ class Bijous extends EventEmitter
     [callback, bundle] = [bundle, null] if 'function' == typeof bundle
     results = {}
 
-    fns = @require(bundle).map (def) => (done) => loadModule.call @, def, results, done
+    fns = @require(bundle).map (def) =>
+      (done) => loadModule.call @, def, results, done
 
     async.series fns, (error) =>
       if callback then callback error, results
