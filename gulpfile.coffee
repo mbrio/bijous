@@ -16,8 +16,11 @@ gulp.task 'test', ['lint'], (cb) ->
   gulp.src libFiles
     .pipe istanbul()
     .on 'finish', ->
-      gulp.src ['./test/**/*-test.js']
-        .pipe mocha()
+      gulp.src ['./test/**/*-test.coffee']
+        .pipe mocha({
+          reporter: 'spec',
+          compilers: 'coffee:coffee-script'
+        })
         .pipe istanbul.writeReports()
         .on 'end', cb
 
