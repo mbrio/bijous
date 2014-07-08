@@ -146,7 +146,7 @@ exports = module.exports = (context, modules, done) -&gt;
 Bijous = require &#39;bijous&#39;
 
 # Loads all modules
-bijous = new Bijous
+bijous = new Bijous()
 
 bijous.load (err, modules) -&gt;
   # Access the results of module1
@@ -234,7 +234,7 @@ bijous.load (err, modules) -&gt;
     <p class='signature' id='constructor-instance'>
       ::<strong>constructor</strong>({this, this, this}={})
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L190'>Source</a>
     </p>
     <div class='docstring'>
@@ -279,7 +279,7 @@ bijous.load (err, modules) -&gt;
     <p class='signature' id='list-instance'>
       Array ::<strong>list</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L215'>Source</a>
     </p>
     <div class='docstring'>
@@ -321,14 +321,14 @@ onlyPublicBundles = bijous.list &#39;public&#39;
     <p class='signature' id='load-instance'>
       ::<strong>load</strong>(bundle, callback)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L306'>Source</a>
     </p>
     <div class='docstring'>
   <p>Calls node&#39;s <code>require</code> function for all module files found for it&#39;s bundles, and executes the returned module function. When a bundle name is supplied it loads the files only for the specified bundle.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
 
 # Loads all modules
-bijous = new Bijous
+bijous = new Bijous()
 bijous.load()
 
 # Loads only modules belonging to the module1 bundle
@@ -339,7 +339,7 @@ bundles:
 bijous.load &#39;module1&#39;
 
 # Loads all modules and executes a callback once all are loaded
-bijous = new Bijous
+bijous = new Bijous()
 
 bijous.load (error, results) -&gt;
 throw error if error
@@ -391,7 +391,7 @@ connections once all modules were loaded.</p>
     <p class='signature' id='require-instance'>
       Array ::<strong>require</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L246'>Source</a>
     </p>
     <div class='docstring'>
@@ -454,7 +454,7 @@ onlyPublicBundles = bijous.require &#39;public&#39;
     </div>
     <div id='footer'>
   Generated on
-  Mon Jul 07 2014 21:16:34 GMT-0400 (EDT)
+  Tue Jul 08 2014 16:22:43 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4

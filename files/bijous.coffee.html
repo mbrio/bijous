@@ -153,7 +153,7 @@
     <p class='signature' id='getModuleName-file'>
       String ? <strong>getModuleName</strong>(file)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L18'>Source</a>
     </p>
     <div class='docstring'>
@@ -187,7 +187,7 @@
     <p class='signature' id='loadModule-file'>
       ? <strong>loadModule</strong>(def, results, done)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L40'>Source</a>
     </p>
     <div class='docstring'>
@@ -248,7 +248,7 @@
     <p class='signature' id='setResult-file'>
       ? <strong>setResult</strong>(def, results, result)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.1.6
+&#47;blob&#47;v0.2.1
 /src&#47;bijous.coffee#L95'>Source</a>
     </p>
     <div class='docstring'>
@@ -258,7 +258,7 @@
 # We define a new {Bijous} instance, using the default bundle configuration.
 # This causes klect to use the {Bijous.defaultBundleName}, and bijous to
 # store results without a namespace
-bijous = new Bijous
+bijous = new Bijous()
 
 # We assume there is a module called *module1*
 bijous.load (err, modules) -&gt;
@@ -338,7 +338,7 @@ bijous.load (err, modules) -&gt;
     </div>
     <div id='footer'>
   Generated on
-  Mon Jul 07 2014 21:16:34 GMT-0400 (EDT)
+  Tue Jul 08 2014 16:22:43 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4
