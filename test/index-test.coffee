@@ -1,5 +1,4 @@
 path = require 'path'
-assert = require 'assert'
 fs = require 'fs'
 should = require 'should'
 async = require 'async'
