@@ -21,30 +21,27 @@ or by saving it to your *package.json* file:
 $ npm install --save bijous
 ```
 
-## Building
-
-In order to build bijous you must have gulp installed.
+In order to build, test, or generate documentation you must have gulp installed:
 
 ```Shell
 $ npm install -g gulp
+```
+
+## Building
+
+```Shell
 $ npm install && gulp build
 ```
 
 ## Testing
 
-In order to test bijous you must have gulp installed.
-
 ```Shell
-$ npm install -g gulp
 $ npm install && gulp test
 ```
 
 ## Documentation
 
-In order to generate bijous documentation you must have gulp installed
-
 ```Shell
-$ npm install -g gulp
 $ npm install && gulp docs
 ```
 
