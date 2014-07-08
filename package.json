@@ -23,8 +23,8 @@
     "should": "^4.0.4"
   },
   "scripts": {
-    "test": "gulp test",
-    "prepublish": "gulp build"
+    "test": "./node_modules/.bin/gulp test",
+    "prepublish": "./node_modules/.bin/gulp build"
   },
   "repository": {
     "type": "git",

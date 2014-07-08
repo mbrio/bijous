@@ -31,11 +31,12 @@ getModuleName = (file) ->
 # done    - Alerts bijous when the module has loaded, is a {Function}, the first
 #           argument will be an {Error} if one has occurred.
 #
-# Returns: `undefined`
 # Emits loaded when a module has successfully loaded. The first argument will be
 #   a {String} representing the module's name, the second argument will be a
 #   {String} representing the bundle's name, the third argument will be an
 #   {Object} containing the results of the module's execution.
+#
+# Returns: `undefined`
 loadModule = (def, results, done) ->
   def.module.call null, @, results, (error, result) =>
     if result
@@ -259,15 +260,17 @@ class Bijous extends EventEmitter
   #   console.log modules.bundle1.module1
   # ```
   #
-  # Returns `undefined`
   # Emits error if an error has occurred while loading any module. The first
-  #   argument will be the {Error} that has occurred
+  #   argument will be the {Error} that has occurred.
+  #
   # Emits done when loading of modules has completed and no error has occurred.
   #   The first argument will be an {Object} containing the results of all
   #   loaded modules. The `done` event could be subscribed to by the loaded
   #   module in order to execute a task once all modules are loaded. An example
   #   would be if a *server* module wanted to listen for connections once all
   #   modules were loaded.
+  #
+  # Returns `undefined`
   load: (bundle, callback) ->
     [callback, bundle] = [bundle, null] if 'function' == typeof bundle
     results = {}
