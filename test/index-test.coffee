@@ -5,14 +5,14 @@ async = require 'async'
 Bijous = require '../lib/bijous'
 
 findModule = (modules, name) ->
-  return true for module in modules when module.name == name
+  return true for module in modules when module.name is name
 
   false
 
 describe 'Bijous', ->
   describe '#cwd', ->
     it 'should be the directory of the requiring module', ->
-      bijous = new Bijous
+      bijous = new Bijous()
       bijous.cwd.should.equal __dirname
 
     it 'should be the directory specified in options', ->
@@ -24,7 +24,7 @@ describe 'Bijous', ->
 
   describe '#bundles', ->
     it 'should be the default pattern', ->
-      bijous = new Bijous
+      bijous = new Bijous()
       bijous.bundles.should.equal Bijous.defaultBundles
 
     it 'should be the pattern specified in options', ->
@@ -39,7 +39,7 @@ describe 'Bijous', ->
 
   describe '#list()', ->
     it 'should find all modules', ->
-      bijous = new Bijous
+      bijous = new Bijous()
       modules = bijous.list().files()
 
       modules.length.should.be.exactly 3
@@ -91,7 +91,7 @@ describe 'Bijous', ->
 
   describe '#require()', ->
     it 'should require all modules', ->
-      bijous = new Bijous
+      bijous = new Bijous()
       modules = bijous.require()
       modules.length.should.be.exactly 3
 
@@ -161,7 +161,7 @@ describe 'Bijous', ->
 
   describe '#load()', ->
     it 'should load all modules', (done) ->
-      bijous = new Bijous
+      bijous = new Bijous()
 
       bijous.load (error, modules) ->
         should(error).not.be.ok
@@ -260,7 +260,7 @@ describe 'Bijous', ->
 
   describe '#loaded', ->
     it 'should emit the loaded event', (done) ->
-      bijous = new Bijous
+      bijous = new Bijous()
       loadedCount = 0
 
       bijous.on 'loaded', -> loadedCount++
@@ -273,7 +273,7 @@ describe 'Bijous', ->
 
   describe '#done', ->
     it 'should emit the done event', (done) ->
-      bijous = new Bijous
+      bijous = new Bijous()
 
       bijous.on 'done', (modules) ->
         Object.keys(modules).length.should.be.exactly 3

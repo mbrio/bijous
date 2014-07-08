@@ -93,7 +93,7 @@ loadModule = (def, results, done) ->
 #
 # Returns: `undefined`
 setResult = (def, results, result) ->
-  if def.bundle == @defaultBundleName then results[def.name] = result
+  if def.bundle is @defaultBundleName then results[def.name] = result
   else _.merge results[def.bundle] ?= {}, _.object([def.name], [result])
 
   return
@@ -312,7 +312,7 @@ class Bijous extends EventEmitter
   #
   # Returns `undefined`
   load: (bundle, callback) ->
-    [callback, bundle] = [bundle, null] if 'function' == typeof bundle
+    [callback, bundle] = [bundle, null] if 'function' is typeof bundle
     results = {}
 
     fns = @require(bundle).map (def) =>
