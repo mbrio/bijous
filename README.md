@@ -41,7 +41,7 @@ $ npm install && gulp test
 
 ## Documentation
 
-In order to test bijous you must have gulp installed
+In order to generate bijous documentation you must have gulp installed
 
 ```Shell
 $ npm install -g gulp
@@ -50,6 +50,8 @@ $ npm install && gulp docs
 
 Once the documentation is built you can open the *index.html* within the *docs*
 directory.
+
+You can see the latest API documentation at http://mbrio.github.io/bijous.
 
 ## License
 
