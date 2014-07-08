@@ -1,7 +1,0 @@
---name Bijous
---readme README.md
---title Bijous Documentation
---private
---internal
-./src
-LICENSE

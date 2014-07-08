@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta charset='UTF-8'>
+  <title>Bijous Documentation</title>
+  <link rel='stylesheet' href='assets/biscotto.css' type='text/css'>
+  <script src='assets/biscotto.js'></script>
+  <script src='assets/search_data.js'></script>
+</head>
+  <body>
+    <div id='base' data-path=''></div>
+<div id='header'>
+  <div id='menu'>
+    <a href='README.md.html' title='Bijous'>Bijous</a>
+    &raquo;
+    <a href='class_index.html' title='Index'>Index</a>
+    &raquo;
+    <span class='title'>README.md</span>
+    <nav>
+      <ul>
+        <li class='noframes'>
+          (<a class='noframes' href='#'>no frames</a>)
+        </li>
+      </ul>
+    </nav>
+    <div id='search'>
+      <a id='class_list_link' href='class_list.html'>Classes</a>
+      <a id='file_list_link' href='file_list.html'>Files</a>
+      <a id='method_list_link' href='method_list.html'>Methods</a>
+      <a id='extra_list_link' href='extra_list.html'>Extras</a>
+    </div>
+  </div>
+  <iframe id='search_frame'></iframe>
+  <div id='fuzzySearch'>
+    <input type='text'>
+    <ol></ol>
+  </div>
+  <div id='help'>
+    <p>
+      Quickly fuzzy find classes, mixins, methods, file:
+    </p>
+    <ul>
+      <li>
+        <span>Ctrl-T</span>
+        Open fuzzy finder dialog
+      </li>
+    </ul>
+    <p>
+      In frame mode you can toggle the list naviation frame on the left side:
+    </p>
+    <ul>
+      <li>
+        <span>Ctrl-L</span>
+        Toggle list view
+      </li>
+    </ul>
+    <p>
+      You can focus a list in frame mode or toggle a tab in frameless mode:
+    </p>
+    <ul>
+      <li>
+        <span>Ctrl-C</span>
+        Class list
+      </li>
+      <li>
+        <span>Ctrl-I</span>
+        Mixin list
+      </li>
+      <li>
+        <span>Ctrl-F</span>
+        File list
+      </li>
+      <li>
+        <span>Ctrl-M</span>
+        Method list
+      </li>
+      <li>
+        <span>Ctrl-E</span>
+        Extras list
+      </li>
+    </ul>
+    <p>
+      You can focus and blur the search input:
+    </p>
+    <ul>
+      <li>
+        <span>Ctrl-S</span>
+        Focus search input
+      </li>
+      <li>
+        <span>Esc</span>
+        Blur search input
+      </li>
+    </ul>
+    <p>
+      In frameless mode you can close the list tab:
+    </p>
+    <ul>
+      <li>
+        <span>Esc</span>
+        Close list tab
+      </li>
+    </ul>
+  </div>
+</div>
+    <div id='content'>
+      <nav class='toc'>
+        <p class='title'>
+          <a class='hide_toc' href='#'>
+            <strong>Table of Contents</strong>
+          </a>
+          <small>
+            (<a class='float_toc' href='#'>left</a>)
+          </small>
+        </p>
+      </nav>
+      <div id='filecontents'>
+        <h1 id="bijous">Bijous</h1><p><a href="https://travis-ci.org/mbrio/bijous"><img src="https://travis-ci.org/mbrio/bijous.svg?branch=master" alt="Build Status"></a> <a href="https://gemnasium.com/mbrio/bijous"><img src="https://gemnasium.com/mbrio/bijous.svg" alt="Dependency Status"></a> <a href="https://codeclimate.com/github/mbrio/bijous"><img src="https://codeclimate.com/github/mbrio/bijous/coverage.png" alt="Code Climate"></a></p><p><a href="https://npmjs.org/package/bijous"><img src="https://nodei.co/npm/bijous.png?downloads=true" alt="NPM Status"></a></p><p>An asynchronous module loader for node.js.</p><h2 id="installation">Installation</h2><p>You can use this node module in your project by executing the following:</p><pre><code class="lang-Shell">$ npm install bijous
+</code></pre><p>or by saving it to your <em>package.json</em> file:</p><pre><code class="lang-Shell">$ npm install --save bijous
+</code></pre>
+<h2 id="building">Building</h2><p>In order to build bijous you must have gulp installed.</p><pre><code class="lang-Shell">$ npm install -g gulp
+$ npm install &amp;&amp; gulp build
+</code></pre>
+<h2 id="testing">Testing</h2><p>In order to test bijous you must have gulp installed.</p><pre><code class="lang-Shell">$ npm install -g gulp
+$ npm install &amp;&amp; gulp test
+</code></pre>
+<h2 id="documentation">Documentation</h2><p>In order to test bijous you must have gulp installed</p><pre><code class="lang-Shell">$ npm install -g gulp
+$ npm install &amp;&amp; gulp docs
+</code></pre><p>Once the documentation is built you can open the <em>index.html</em> within the <em>docs</em>
+directory.</p><h2 id="license">License</h2><p>ICS &copy; 2014 Michael Diolosa &lt;<a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#109;&#x69;&#99;&#104;&#x61;&#x65;&#108;&#46;&#x64;&#x69;&#x6f;&#x6c;&#x6f;&#115;&#x61;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#111;&#x6d;">&#109;&#x69;&#99;&#104;&#x61;&#x65;&#108;&#46;&#x64;&#x69;&#x6f;&#x6c;&#x6f;&#115;&#x61;&#x40;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#111;&#x6d;</a>&gt;</p>
+      </div>
+    </div>
+    <div id='footer'>
+  Generated on
+  Mon Jul 07 2014 21:03:42 GMT-0400 (EDT)
+  by
+  <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
+  v2.1.4
+  (Node.js v0.11.13).
+  &#10034;
+  Press Ctrl-h to see the keyboard shortcuts
+</div>
+  </body>
+</html>
