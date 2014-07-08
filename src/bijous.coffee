@@ -64,7 +64,7 @@ loadModule = (def, results, done) ->
 # # We define a new {Bijous} instance, using the default bundle configuration.
 # # This causes klect to use the {Bijous.defaultBundleName}, and bijous to
 # # store results without a namespace
-# bijous = new Bijous
+# bijous = new Bijous()
 #
 # # We assume there is a module called *module1*
 # bijous.load (err, modules) ->
@@ -134,7 +134,7 @@ setResult = (def, results, result) ->
 # Bijous = require 'bijous'
 #
 # # Loads all modules
-# bijous = new Bijous
+# bijous = new Bijous()
 #
 # bijous.load (err, modules) ->
 #   # Access the results of module1
@@ -272,7 +272,7 @@ class Bijous extends EventEmitter
   # Bijous = require 'bijous'
   #
   # # Loads all modules
-  # bijous = new Bijous
+  # bijous = new Bijous()
   # bijous.load()
   #
   # # Loads only modules belonging to the module1 bundle
@@ -283,7 +283,7 @@ class Bijous extends EventEmitter
   # bijous.load 'module1'
   #
   # # Loads all modules and executes a callback once all are loaded
-  # bijous = new Bijous
+  # bijous = new Bijous()
   #
   # bijous.load (error, results) ->
   #   throw error if error
