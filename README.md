@@ -55,4 +55,5 @@ You can see the latest API documentation at http://mbrio.github.io/bijous.
 
 ## License
 
-ICS &copy; 2014 Michael Diolosa &lt;<michael.diolosa@gmail.com>&gt;
+[ICS](http://opensource.org/licenses/ISC) &copy; 2014 Michael Diolosa
+<michael.diolosa@gmail.com>
