@@ -165,7 +165,7 @@ describe 'Bijous', ->
 
       bijous.load (error, modules) ->
         expect(error).to.be.undefined
-        expect(Object.keys(modules).length).to.equal 3
+        expect(modules).to.have.keys ['module1', 'module2', 'module3']
         expect(modules.module1.name).to.equal 'module1'
         expect(modules.module2.name).to.equal 'module2'
         expect(modules.module3.name).to.equal 'module3'
@@ -183,9 +183,9 @@ describe 'Bijous', ->
 
       bijous.load (error, modules) ->
         expect(error).to.be.undefined
-        expect(Object.keys(modules).length).to.equal 2
-        expect(Object.keys(modules.private).length).to.equal 3
-        expect(Object.keys(modules.public).length).to.equal 1
+        expect(modules).to.have.keys ['private', 'public']
+        expect(modules.private).to.have.keys ['module1', 'module2', 'module3']
+        expect(modules.public).to.have.keys ['public1']
 
         expect(modules.private.module1.name).to.equal 'module1'
         expect(modules.private.module2.name).to.equal 'module2'
@@ -207,8 +207,10 @@ describe 'Bijous', ->
 
           bijous.load 'private', (error, modules) ->
             expect(error).to.be.undefined
-            expect(Object.keys(modules).length).to.equal 1
-            expect(Object.keys(modules.private).length).to.equal 3
+            expect(modules).to.have.keys ['private']
+            expect(modules.private).to.have.keys ['module1', 'module2',
+              'module3']
+
             expect(modules.private.module1.name).to.equal 'module1'
             expect(modules.private.module2.name).to.equal 'module2'
             expect(modules.private.module3.name).to.equal 'module3'
@@ -225,8 +227,9 @@ describe 'Bijous', ->
 
           bijous.load 'public', (error, modules) ->
             expect(error).to.be.undefined
-            expect(Object.keys(modules).length).to.equal 1
-            expect(Object.keys(modules.public).length).to.equal 1
+            expect(modules).to.have.keys ['public']
+            expect(modules.public).to.have.keys ['public1']
+
             expect(modules.public.public1.name).to.equal 'public1'
             callback null
         (callback) ->
@@ -254,7 +257,7 @@ describe 'Bijous', ->
       expect(bijous.bundles).to.not.equal Bijous.defaultBundles
 
       bijous.load (error, modules) ->
-        expect(error).to.be.ok
+        expect(error).to.exist
         expect(Object.keys(modules).length).to.equal 0
         done()
 
@@ -276,7 +279,7 @@ describe 'Bijous', ->
       bijous = new Bijous()
 
       bijous.on 'done', (modules) ->
-        expect(Object.keys(modules).length).to.equal 3
+        expect(modules).to.have.keys ['module1', 'module2', 'module3']
         expect(modules.module1.name).to.equal 'module1'
         expect(modules.module2.name).to.equal 'module2'
         expect(modules.module3.name).to.equal 'module3'
