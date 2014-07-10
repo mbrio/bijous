@@ -10,7 +10,7 @@ srcFiles = ['./src/**/*.coffee']
 libFiles = ['./lib/**/*.js']
 
 gulp.task 'lint', ->
-  gulp.src srcFiles.concat ['./*.coffee', './test/**/*.coffee']
+  gulp.src srcFiles.concat ['./*.coffee', './spec/**/*.coffee']
     .pipe coffeelint()
     .pipe coffeelint.reporter()
 
@@ -18,7 +18,7 @@ gulp.task 'test', ['lint', 'build'], (cb) ->
   gulp.src libFiles
     .pipe istanbul()
     .on 'finish', ->
-      gulp.src ['./test/**/*-test.coffee']
+      gulp.src ['./spec/**/*-spec.coffee']
         .pipe mocha({
           reporter: 'spec',
           compilers: 'coffee:coffee-script'
@@ -27,6 +27,8 @@ gulp.task 'test', ['lint', 'build'], (cb) ->
         .on 'end', cb
 
   return
+
+gulp.task 'spec', ['test']
 
 gulp.task 'docs', ->
   biscotto()
