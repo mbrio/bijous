@@ -3,6 +3,7 @@ fs = require 'fs'
 expect = require('chai').expect
 async = require 'async'
 Bijous = require '../lib/bijous'
+_ = require 'lodash'
 
 findModule = (modules, name) ->
   return true for module in modules when module.name is name
@@ -11,157 +12,156 @@ findModule = (modules, name) ->
 
 describe 'Bijous', ->
   describe '#cwd', ->
-    it 'should be the directory of the requiring module', ->
-      bijous = new Bijous()
-      expect(bijous.cwd).to.equal __dirname
+    context 'when no cwd is specified', ->
+      it 'should use the directory of the requiring module', ->
+        bijous = new Bijous()
+        expect(bijous.cwd).to.equal __dirname
 
-    it 'should be the directory specified in options', ->
-      src = path.join __dirname, 'src'
-      expect(src).to.not.equal __dirname
+    context 'when a cwd is specified', ->
+      it 'should override the directory of the requiring module', ->
+        src = path.join __dirname, 'src'
+        expect(src).to.not.equal __dirname
 
-      bijous = new Bijous { cwd: src }
-      expect(bijous.cwd).to.equal src
+        bijous = new Bijous { cwd: src }
+        expect(bijous.cwd).to.equal src
+
+  describe '#defaultBundleName', ->
+    context 'when no defaultBundleName is specified', ->
+      it 'should use the Bijous.defaultBundleName', ->
+        bijous = new Bijous()
+        expect(bijous.defaultBundleName).to.equal Bijous.defaultBundleName
+
+    context 'when a defaultBundleName is specified', ->
+      it 'should override the Bijous.defaultBundleName', ->
+        cdbn = '$$'
+        bijous = new Bijous
+          defaultBundleName: cdbn
+
+        expect(cdbn).to.not.equal Bijous.defaultBundleName
+        expect(bijous.defaultBundleName).to.equal cdbn
+
+    context 'when a falsy defaultBundleName is specified', ->
+      it 'should use the Bijous.defaultBundleName', ->
+        bijous = new Bijous
+          defaultBundleName: null
+
+        expect(bijous.defaultBundleName).to.equal Bijous.defaultBundleName
 
   describe '#bundles', ->
-    it 'should be the default pattern', ->
-      bijous = new Bijous()
-      expect(bijous.bundles).to.equal Bijous.defaultBundles
+    context 'when no bundles are specified', ->
+      it 'should use the default bundle pattern', ->
+        bijous = new Bijous()
+        expect(bijous.bundles).to.equal Bijous.defaultBundles
 
-    it 'should be the pattern specified in options', ->
-      bundles =
-        private: 'modules/!(routes)'
-        public: 'public/!(routes)'
+    context 'when bundles are specified', ->
+      it 'should override the default bundle pattern', ->
+        bundles =
+          private: 'fixtures/modules/!(routes)'
+          public: 'fixtures/public/!(routes)'
 
-      expect(bundles).to.not.equal Bijous.defaultBundles
+        expect(bundles).to.not.equal Bijous.defaultBundles
 
-      bijous = new Bijous { bundles: bundles }
-      expect(bijous.bundles).to.equal bundles
+        bijous = new Bijous { bundles: bundles }
+        expect(bijous.bundles).to.equal bundles
 
   describe '#list()', ->
-    it 'should find all modules', ->
-      bijous = new Bijous()
-      modules = bijous.list().files()
+    context 'when no bundle pattern is specified', ->
+      context 'when specifying only one bundle', ->
+        it 'should find all modules for all bundles', ->
+          bijous = new Bijous
+            bundles: 'fixtures/modules/*'
 
-      expect(modules.length).to.equal 3
+          expect(bijous.list().files()).to.have.members [
+            'fixtures/modules/module1.coffee'
+            'fixtures/modules/module2.coffee'
+            'fixtures/modules/module3'
+          ]
 
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        expect(modules.indexOf(path.join('modules', f))).to.be.above -1
+      context 'when specifying multiple bundles', ->
+        it 'should find all modules for all bundles', ->
+          bijous = new Bijous
+            bundles:
+              private: 'fixtures/modules/*'
+              public: 'fixtures/public/*'
+              empty: 'fixtures/empty/*'
 
-    it 'should find all modules when passed multiple bundles', ->
-      bijous = new Bijous
-        bundles:
-          private: 'modules/*'
-          public: 'public/*'
-          empty: 'empty/*'
+          expect(bijous.list().files()).to.have.members [
+            'fixtures/modules/module1.coffee'
+            'fixtures/modules/module2.coffee'
+            'fixtures/modules/module3'
+            'fixtures/public/public1.coffee'
+            'fixtures/public/public2.coffee'
+          ]
 
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
-      modules = bijous.list().files()
+    context 'when a bundle pattern is specified', ->
+      it 'should find only modules pertaining to the specified bundle', ->
+        bijous = new Bijous
+          bundles:
+            private: 'fixtures/modules/*',
+            public: 'fixtures/public/*',
+            empty: 'fixtures/empty/*'
 
-      expect(modules.length).to.equal 5
+        expect(bijous.list('private').files()).to.have.members [
+          'fixtures/modules/module1.coffee'
+          'fixtures/modules/module2.coffee'
+          'fixtures/modules/module3'
+        ]
 
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        expect(modules.indexOf(path.join('modules', f))).to.be.above -1
+        expect(bijous.list('public').files()).to.have.members [
+          'fixtures/public/public1.coffee'
+          'fixtures/public/public2.coffee'
+        ]
 
-      fs.readdirSync(path.join(__dirname, 'public')).map (f) ->
-        expect(modules.indexOf(path.join('public', f))).to.be.above -1
-
-    it 'should find modules pertaining to a specific bundle', ->
-      bijous = new Bijous
-        bundles:
-          private: 'modules/*',
-          public: 'public/*',
-          empty: 'empty/*'
-
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
-
-      modules = bijous.list('private').files()
-      expect(modules.length).to.equal 3
-
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        expect(modules.indexOf(path.join('modules', f))).to.be.above -1
-
-      modules = bijous.list('public').files()
-      expect(modules.length).equal 2
-
-      fs.readdirSync(path.join(__dirname, 'public')).map (f) ->
-        expect(modules.indexOf(path.join('public', f))).to.be.above -1
-
-      modules = bijous.list('empty').files()
-      expect(modules.length).to.equal 0
+        expect(bijous.list('empty').files()).to.be.empty
 
   describe '#require()', ->
-    it 'should require all modules', ->
-      bijous = new Bijous()
-      modules = bijous.require()
-      expect(modules.length).to.equal 3
+    context 'when no bundle pattern is specified', ->
+      context 'when specifying only one bundle', ->
+        it 'should require all modules for all bundles', ->
+          bijous = new Bijous
+            bundles: 'fixtures/modules/*'
 
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        extname = path.extname f
-        basename = path.basename f, extname
+          modules = (obj.name for obj in bijous.require())
+          expect(modules).to.have.members ['module1', 'module2', 'module3']
 
-        found = findModule modules, basename
-        expect(found).to.equal true
+      context 'when specifying multiple bundles', ->
+        it 'should require all modules for all bundles', ->
+          bijous = new Bijous
+            bundles:
+              private: 'fixtures/modules/*'
+              public: 'fixtures/public/*'
+              empty: 'fixtures/empty/*'
 
-    it 'should require all modules when passed multiple bundles', ->
-      bijous = new Bijous
-        bundles:
-          private: 'modules/*'
-          public: 'public/*'
-          empty: 'empty/*'
+          modules = (obj.name for obj in bijous.require())
+          expect(modules).to.have.members [
+            'module1', 'module2', 'module3', 'public1', 'public2'
+          ]
 
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
-      modules = bijous.require()
-      expect(modules.length).to.equal 5
+    context 'when a bundle pattern is specified', ->
+      it 'should require only modules pertaining to the specified bundle', ->
+        bijous = new Bijous
+          bundles:
+            private: 'fixtures/modules/*'
+            public: 'fixtures/public/*'
+            empty: 'fixtures/empty/*'
 
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        extname = path.extname f
-        basename = path.basename f, extname
+        modules = (obj.name for obj in bijous.require 'private')
+        expect(modules).to.have.members [
+          'module1', 'module2', 'module3'
+        ]
 
-        found = findModule modules, basename
-        expect(found).to.equal true
+        modules = (obj.name for obj in bijous.require 'public')
+        expect(modules).to.have.members [
+          'public1', 'public2'
+        ]
 
-      fs.readdirSync(path.join(__dirname, 'public')).map (f) ->
-        extname = path.extname f
-        basename = path.basename f, extname
-
-        found = findModule modules, basename
-        expect(found).to.equal true
-
-    it 'should require modules pertaining to a specific bundle', ->
-      bijous = new Bijous
-        bundles:
-          private: 'modules/*'
-          public: 'public/*'
-          empty: 'empty/*'
-
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
-
-      modules = bijous.require 'private'
-      expect(modules.length).to.equal 3
-
-      fs.readdirSync(path.join(__dirname, 'modules')).map (f) ->
-        extname = path.extname f
-        basename = path.basename f, extname
-
-        found = findModule modules, basename
-        expect(found).to.equal true
-
-      modules = bijous.require 'public'
-      expect(modules.length).to.equal 2
-
-      fs.readdirSync(path.join(__dirname, 'public')).map (f) ->
-        extname = path.extname f
-        basename = path.basename f, extname
-
-        found = findModule modules, basename
-        expect(found).to.equal true
-
-      modules = bijous.require 'empty'
-      expect(modules.length).to.equal 0
+        modules = bijous.require 'empty'
+        expect(modules).to.be.empty
 
   describe '#load()', ->
     it 'should load all modules', (done) ->
-      bijous = new Bijous()
+      bijous = new Bijous
+        bundles: 'fixtures/modules/*'
 
       bijous.load (error, modules) ->
         expect(error).to.be.undefined
@@ -175,11 +175,9 @@ describe 'Bijous', ->
     it 'should load all modules when passed multiple bundles', (done) ->
       bijous = new Bijous
         bundles:
-          private: 'modules/*'
-          public: 'public/*'
-          empty: 'empty/*'
-
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+          private: 'fixtures/modules/*'
+          public: 'fixtures/public/*'
+          empty: 'fixtures/empty/*'
 
       bijous.load (error, modules) ->
         expect(error).to.be.undefined
@@ -199,11 +197,9 @@ describe 'Bijous', ->
         (callback) ->
           bijous = new Bijous
             bundles:
-              private: 'modules/*'
-              public: 'public/*'
-              empty: 'empty/*'
-
-          expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+              private: 'fixtures/modules/*'
+              public: 'fixtures/public/*'
+              empty: 'fixtures/empty/*'
 
           bijous.load 'private', (error, modules) ->
             expect(error).to.be.undefined
@@ -219,11 +215,9 @@ describe 'Bijous', ->
         (callback) ->
           bijous = new Bijous
             bundles:
-              private: 'modules/*'
-              public: 'public/*'
-              empty: 'empty/*'
-
-          expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+              private: 'fixtures/modules/*'
+              public: 'fixtures/public/*'
+              empty: 'fixtures/empty/*'
 
           bijous.load 'public', (error, modules) ->
             expect(error).to.be.undefined
@@ -235,15 +229,13 @@ describe 'Bijous', ->
         (callback) ->
           bijous = new Bijous
             bundles:
-              private: 'modules/*'
-              public: 'public/*'
-              empty: 'empty/*'
-
-          expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+              private: 'fixtures/modules/*'
+              public: 'fixtures/public/*'
+              empty: 'fixtures/empty/*'
 
           bijous.load 'empty', (error, modules) ->
             expect(error).to.be.undefined
-            expect(Object.keys(modules).length).to.equal 0
+            expect(Object.keys(modules)).to.be.empty
             callback null
       ],
 
@@ -252,18 +244,18 @@ describe 'Bijous', ->
 
     it 'should load all modules and handle errors with callback', (done) ->
       bijous = new Bijous
-        bundles: 'errors/*'
-
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+        bundles: 'fixtures/errors/*'
 
       bijous.load (error, modules) ->
         expect(error).to.exist
-        expect(Object.keys(modules).length).to.equal 0
+        expect(Object.keys(modules)).to.be.empty
         done()
 
   describe '#loaded', ->
     it 'should emit the loaded event', (done) ->
-      bijous = new Bijous()
+      bijous = new Bijous
+        bundles: 'fixtures/modules/*'
+
       loadedCount = 0
 
       bijous.on 'loaded', -> loadedCount++
@@ -276,7 +268,8 @@ describe 'Bijous', ->
 
   describe '#done', ->
     it 'should emit the done event', (done) ->
-      bijous = new Bijous()
+      bijous = new Bijous
+        bundles: 'fixtures/modules/*'
 
       bijous.on 'done', (modules) ->
         expect(modules).to.have.keys ['module1', 'module2', 'module3']
@@ -291,9 +284,7 @@ describe 'Bijous', ->
   describe '#error', ->
     it 'should emit the error event', (done) ->
       bijous = new Bijous
-        bundles: 'errors/*'
-
-      expect(bijous.bundles).to.not.equal Bijous.defaultBundles
+        bundles: 'fixtures/errors/*'
 
       bijous.on 'error', (err) ->
         expect(err.message).to.equal 'error1'
