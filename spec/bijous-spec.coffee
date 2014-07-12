@@ -91,6 +91,7 @@ describe 'Bijous', ->
             'fixtures/modules/module3'
             'fixtures/public/public1.coffee'
             'fixtures/public/public2.coffee'
+            'fixtures/public/public-server.coffee'
           ]
 
     context 'when a bundle pattern is specified', ->
@@ -110,6 +111,7 @@ describe 'Bijous', ->
         expect(bijous.list('public').files()).to.have.members [
           'fixtures/public/public1.coffee'
           'fixtures/public/public2.coffee'
+          'fixtures/public/public-server.coffee'
         ]
 
         expect(bijous.list('empty').files()).to.be.empty
@@ -134,8 +136,8 @@ describe 'Bijous', ->
 
           modules = (obj.name for obj in bijous.require())
           expect(modules).to.have.members [
-            'module1', 'module2', 'module3', 'public1', 'public2'
-          ]
+            'module1', 'module2', 'module3', 'public1', 'public2',
+            'publicServer']
 
     context 'when a bundle pattern is specified', ->
       it 'should require only modules pertaining to the specified bundle', ->
@@ -147,13 +149,11 @@ describe 'Bijous', ->
 
         modules = (obj.name for obj in bijous.require 'private')
         expect(modules).to.have.members [
-          'module1', 'module2', 'module3'
-        ]
+          'module1', 'module2', 'module3']
 
         modules = (obj.name for obj in bijous.require 'public')
         expect(modules).to.have.members [
-          'public1', 'public2'
-        ]
+          'public1', 'public2', 'publicServer']
 
         modules = bijous.require 'empty'
         expect(modules).to.be.empty
@@ -187,13 +187,13 @@ describe 'Bijous', ->
             expect(services).to.have.keys ['private', 'public']
             expect(services.private).to.have.keys [ 'module1', 'module2',
               'module3']
-            expect(services.public).to.have.keys ['public1']
+            expect(services.public).to.have.keys ['public1', 'publicServer']
 
             names = (obj.name for key, obj of services.private)
             expect(names).to.have.members ['module1', 'module2', 'module3']
 
             names = (obj.name for key, obj of services.public)
-            expect(names).to.have.members ['public1']
+            expect(names).to.have.members ['public1', 'public-server']
 
             done()
 
@@ -221,10 +221,11 @@ describe 'Bijous', ->
             bijous.load 'public', (error, services) ->
               expect(error).to.be.undefined
               expect(services).to.have.keys ['public']
-              expect(services.public).to.have.keys ['public1']
+              console.log services.public
+              expect(services.public).to.have.keys ['public1', 'publicServer']
 
               names = (obj.name for key, obj of services.public)
-              expect(names).to.have.members ['public1']
+              expect(names).to.have.members ['public1', 'public-server']
 
               callback error
           (callback) ->
