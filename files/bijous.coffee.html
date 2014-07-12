@@ -123,7 +123,7 @@
       </a>
     </span>
     <span class='desc'>
-      Determines a module&#39;s name The name generated corresponds with the name of the file with it&#39;s path and extension removed.
+      Determines a module&#39;s name The name generated corresponds with the name of the file with it&#39;s path and extension removed passed through <code>camelize</code> in <code>underscore-plus</code>.
     </span>
   </li>
   <li>
@@ -153,15 +153,19 @@
     <p class='signature' id='getModuleName-file'>
       String ? <strong>getModuleName</strong>(file)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L25'>Source</a>
+&#47;blob&#47;v0.2.2
+/src&#47;bijous.coffee#L27'>Source</a>
     </p>
     <div class='docstring'>
   <p>Determines a module&#39;s name</p><p>The name generated corresponds with the name of the file with it&#39;s path and
-extension removed.</p><p>TODO: Use a library to convert non-javascript-esq names, Atom utilizes an
-extension to the underscore module called <code>underscore-plus</code> to accomplish
-this.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#39;)
+extension removed passed through <code>camelize</code> in <code>underscore-plus</code>.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#39;)
 # =&gt; &#39;module1&#39;
+
+getModuleName(&#39;/modules/web-server.js&#39;)
+# =&gt; &#39;webServer&#39;
+
+getModuleName(&#39;/modules/chat_server.js&#39;)
+# =&gt; &#39;chatServer&#39;
 </code></pre>
 
 </div>
@@ -190,8 +194,8 @@ this.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#
     <p class='signature' id='loadModule-file'>
       ? <strong>loadModule</strong>(def, services, done)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L48'>Source</a>
+&#47;blob&#47;v0.2.2
+/src&#47;bijous.coffee#L50'>Source</a>
     </p>
     <div class='docstring'>
   <p>Loads a singular module as described by <a href='../classes/Bijous.html'>Bijous</a>. Handles populating the module&#39;s service object if it provides one.</p><p>Emits <code>loaded</code> when a module has successfully loaded. The first argument will
@@ -228,7 +232,7 @@ this.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#
     <li>
       <span class='name'>services</span>
       &mdash;
-      <span class='desc'>The services returned by any previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>. The definition of this object can be found in {setService}.</span>
+      <span class='desc'>The services returned by any previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>. The definition of this object can be found in {.setService}.</span>
     </li>
     <li>
       <span class='type'>(Function)</span>
@@ -250,8 +254,8 @@ this.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#
     <p class='signature' id='setService-file'>
       ? <strong>setService</strong>(def, services, service)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
-&#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L113'>Source</a>
+&#47;blob&#47;v0.2.2
+/src&#47;bijous.coffee#L115'>Source</a>
     </p>
     <div class='docstring'>
   <p>A helper function that adds a module&#39;s service to the collection of services returned by loading all modules.</p><p>The collection <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> contains provided services as a result of calling the
@@ -340,7 +344,7 @@ bijous.load (err, modules) -&gt; console.log modules.private.module1
     </div>
     <div id='footer'>
   Generated on
-  Fri Jul 11 2014 22:46:59 GMT-0400 (EDT)
+  Sat Jul 12 2014 15:30:27 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4
