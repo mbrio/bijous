@@ -5,30 +5,16 @@ _ = require 'underscore-plus'
 {EventEmitter} = require 'events'
 Klect = require 'klect'
 
-# Public: Determines a module's name
-#
-# The name generated corresponds with the name of the file with it's path and
-# extension removed passed through `camelize` in `underscore-plus`.
+# Private: Determines a module's name
 #
 # file - The path of a file as a {String}
-#
-# ```coffee
-# getModuleName('/modules/module1.js')
-# # => 'module1'
-#
-# getModuleName('/modules/web-server.js')
-# # => 'webServer'
-#
-# getModuleName('/modules/chat_server.js')
-# # => 'chatServer'
-# ```
 #
 # Returns: A {String} representing the module's name
 getModuleName = (file) ->
   extname = path.extname file
   _.camelize path.basename(file, extname)
 
-# Public: Loads a singular module as described by {Bijous}. Handles populating
+# Private: Loads a singular module as described by {Bijous}. Handles populating
 # the module's service object if it provides one.
 #
 # def      - The module's definition {Object} with the following keys:
@@ -37,14 +23,9 @@ getModuleName = (file) ->
 #            :module - The module's load function
 # services - The services returned by any previously loaded modules as an
 #            {Object}. The definition of this object can be found in
-#            {setService}.
+#            {.setService}.
 # done     - Callback {Function} that alerts {Bijous} when the module has
 #            loaded, the first argument will be an {Error} if one has occurred.
-#
-# Emits `loaded` when a module has successfully loaded. The first argument will
-#   be a {String} representing the module's name; the second argument will be a
-#   {String} representing the bundle's name; the third, optional argument will
-#   be an {Object} representing any services the module provides.
 #
 # Returns: `undefined`
 loadModule = (def, services, done) ->
@@ -56,52 +37,8 @@ loadModule = (def, services, done) ->
 
   return
 
-# Public: A helper function that adds a module's service to the collection of
+# Private: A helper function that adds a module's service to the collection of
 # services returned by loading all modules.
-#
-# The collection {Object} contains provided services as a result of calling the
-# {Bijous#load} method. This object provides accessor properties named by their
-# module name and namespaced by their bundle name. If the bundle's name happens
-# to match {Bijous.defaultBundleName}, the service will *not* use namespacing
-# and apply the accessor property to the collection.
-#
-# ## Default Bundles Have No Namespace
-#
-# You would create a bundle with a default name by not passing in a `bundles`
-# option to the {Bijous} constructor; or by passing in either a {String} or an
-# {Array} as the `bundles` option to the {Bijous} constructor.
-#
-# ```coffee
-# Bijous = require 'bijous'
-#
-# # We define a new {Bijous} instance without passing in a `bundles` option.
-# # This causes Klect to use the {Bijous.defaultBundleName}, and Bijous to
-# # store services without a namespace
-# bijous = new Bijous()
-#
-# # We assume there is a module called *module1*
-# bijous.load (err, modules) -> console.log modules.module1
-#
-# # We define a new {Bijous} instance by supplying only a {String} as the
-# # `bundles` option. This causes Klect to use the {Bijous.defaultBundleName},
-# # and Bijous to store services without a namespace
-# bijous = new Bijous { bundles: 'modules/!(routes)' }
-#
-# # We assume there is a module called *module1*
-# bijous.load (err, modules) -> console.log modules.module1
-# ```
-#
-# ## Specified Bundle Names Have Namespace
-#
-# ```coffee
-# # We define a new {Bijous} instance by supplying an {Object} as the `bundles`
-# # option. This causes Klect to use a bundle name, and Bijous to namespace the
-# # services based on the bundle name
-# bijous = new Bijous { bundles: { private: 'modules/!(routes)' } }
-#
-# # We assume there is a module called *module1*
-# bijous.load (err, modules) -> console.log modules.private.module1
-# ```
 #
 # def      - The module's definition {Object} with the following keys:
 #            :name - The module's name
@@ -128,16 +65,79 @@ setService = (def, services, service) ->
 #
 # Bijous modules are synonymous with Klect bundles and can be retrieved and used
 # in much the same way. What Bijous adds is the ability to `load` and `require`
-# modules conforming to [node.js](http://nodejs.org/api/modules.html). Modules
-# used in this way must conform to Bijous' module interface which is described
-# as a node module exporting a singular function with three arguments. The
-# first argument will be the {Bijous} instance loading the module, the second
-# argument will be an {Object} containing the services previously loaded modules
-# provide, and the third argument will be a {Function} callback that alerts the
-# {Bijous} instance when the module has completed loading. The callback function
-# has two arguments, the first argument will be an {Error} if one has occurred,
-# the second argument will be an optional {Object} containing provided services
-# from all loaded modules, see {setService}.
+# modules conforming to the [node.js](http://nodejs.org/api/modules.html)
+# module specification. Modules used in this way must conform to Bijous' module
+# interface.
+#
+# ### Bijous Module Interface
+#
+# A Bijous module is a node module that exports a single function with three
+# arguments. The first argument will be the {Bijous} instance loading the
+# module, the second argument will be an {Object} containing the services
+# previously loaded modules provide, and the third argument will be a {Function}
+# callback that alerts the {Bijous} instance when the module has completed
+# loading. The callback function has two arguments, the first argument will be
+# an {Error} if one has occurred, the second argument will be an optional
+# {Object} containing provided services from all loaded modules.
+#
+# #### Service Object Naming
+#
+# The service object provides accessor properties corresponding to their module
+# name and namespaced by their bundle name.
+#
+# ##### Module Names
+#
+# The module's name is the name of it's file without the path and extension
+# passed as an argument to `_.camelize(path)`.
+#
+# ##### Bundle Name and Namespacing
+#
+# If the bundle's name happens to match the defaultBundleName
+# (see {Bijous::constructor}), the service will *not* use namespacing and
+# instead apply the accessor property directly to the service object.
+#
+# ###### Default Bundles Have No Namespace
+#
+# You would create a bundle with a default name by not passing in a `bundles`
+# option to {Bijous::constructor} or by passing in either a {String} or an
+# {Array} as the `bundles` option to the {Bijous} constructor.
+#
+# ```coffee
+# Bijous = require 'bijous'
+#
+# # We define a new {Bijous} instance without passing in a `bundles` option.
+# # This causes Klect to use the `defaultBundleName`, and Bijous to
+# # store services without a namespace
+# bijous = new Bijous()
+#
+# # We assume there is a module called *module1*
+# bijous.load (err, modules) -> console.log modules.module1
+#
+# # We define a new {Bijous} instance by supplying only a {String} as the
+# # `bundles` option. This causes Klect to use the `defaultBundleName`,
+# # and Bijous to store services without a namespace
+# bijous = new Bijous { bundles: 'modules/!(routes)' }
+#
+# # We assume there is a module called *module1*
+# bijous.load (err, modules) -> console.log modules.module1
+# ```
+#
+# ###### Specified Bundle Names Have Namespace
+#
+# You would create a bundle with a custom name by passing in an {Object}
+# definition as the `bundles` option to {Bijous::constructor}.
+#
+# ```coffee
+# # We define a new {Bijous} instance by supplying an {Object} as the `bundles`
+# # option. This causes Klect to use a bundle name, and Bijous to namespace the
+# # services based on the bundle name
+# bijous = new Bijous { bundles: { private: 'modules/!(routes)' } }
+#
+# # We assume there is a module called *module1*
+# bijous.load (err, modules) -> console.log modules.private.module1
+# ```
+#
+# ## Example
 #
 # We can assume that the following code describes the module being loaded,
 # resides in a file called *modules/mobule1.coffee*, and provides a service
@@ -186,17 +186,10 @@ setService = (def, services, service) ->
 #   console.log modules.web.module2
 # ```
 class Bijous extends EventEmitter
-  # Public: The default bundle configuration for Klect as a {String}. This
-  # configuration describes how all modules are to be found.
-  # (default: `modules/*`). For more information see
-  # [Klect](https://github.com/awnist/klect).
+  # Internal: The default bundle configuration for Klect as a {String}.
   @defaultBundles: 'modules/*'
 
-  # Public: The default bundle name to pass to Klect as a {String}. When a
-  # bundle descriptor is passed from Bijous to Klect that is not an object
-  # (e.g. a string or an array) this is the name used for the bundle. Bundle
-  # services that bear it's name are not namespaced when received from the
-  # `load` callback, see {setService}. (default: `_`)
+  # Internal: The default bundle name to pass to Klect as a {String}.
   @defaultBundleName: '_'
 
   # Public: Instantiates a new {Bijous} loader.
@@ -205,13 +198,16 @@ class Bijous extends EventEmitter
   #           :cwd - The directory where modules can be found as a {String}.
   #                  Defaults to the directory the module's parent resides in.
   #                  (default: `path.dirname(module.parent.filename)`)
-  #           :bundles - The Klect bundles descriptor as an {Object}, used to
-  #                      find modules. (default: {Bijous.defaultBundles})
-  #           :defaultBundleName - The {String} name to use as the default
-  #                                bundle for Klect. When passing in a {String}
-  #                                or an {Array} for `bundles` this is the name
-  #                                used as the bundle name. (default:
-  #                                {Bijous.defaultBundleName})
+  #           :bundles - The Klect bundles descriptor as an {Object}, {Array},
+  #                      or {String}. Describes the pattern to use when locating
+  #                      module files, is appended to `cwd`. For more details,
+  #                      see [Klect](https://github.com/awnist/klect).
+  #                      (default: 'modules/*')
+  #           :defaultBundleName - The {String} to use as the default bundle
+  #                                name for
+  #                                [Klect](https://github.com/awnist/klect).
+  #                                Bundles bearing this name will not namespace
+  #                                it's provided services, see {Bijous}.
   constructor: ({@cwd, @bundles, @defaultBundleName} = {}) ->
     @cwd ?= path.dirname module.parent.filename
     @bundles ?= Bijous.defaultBundles
@@ -245,11 +241,11 @@ class Bijous extends EventEmitter
     klect.gather(@bundles).bundles bundle
 
   # Public: Calls node's `require` function for all module files found for it's
-  # bundles. When a bundle name is supplied it calls `require` with files
-  # associated only with the specified bundle.
+  # bundles. When a bundle name or pattern is supplied it calls `require` with
+  # files associated only with the specified bundles.
   #
-  # bundle - The bundle name as a {String} to use when retrieving modules.
-  # (optional)
+  # bundle - The bundle name or pattern as a {String} to use when retrieving
+  # modules. (optional)
   #
   # ```coffee
   # Bijous = require 'bijous'
@@ -276,15 +272,16 @@ class Bijous extends EventEmitter
         module: require path.join(@cwd, file)
 
   # Public: Calls node's `require` function for all module files found for it's
-  # bundles, and executes the returned module function. When a bundle name is
-  # supplied it loads the files only for the specified bundle.
+  # bundles, and executes the returned module function. When a bundle name or
+  # pattern is supplied it loads the files associated only with the specified
+  # bundles.
   #
-  # bundle   - The bundle name as a {String} to use when retrieving modules.
-  #            (optional)
+  # bundle   - The bundle name or pattern as a {String} to use when retrieving
+  #            modules. (optional)
   # callback - The callback {Function} to use when all modules are loaded. The
   #            first argument will be an {Error} if one has occurred, the second
   #            will be the services of any loaded modules that provide them,
-  #            see {setService}.
+  #            see {Bijous}.
   #
   # ```coffee
   # Bijous = require 'bijous'
@@ -315,12 +312,26 @@ class Bijous extends EventEmitter
   #   callback argument has been supplied. The first argument will be the
   #   {Error} that has occurred.
   #
-  # Emits `done` when loading of modules has completed and no error has
+  # Emits `loaded` when a module has successfully loaded. The first argument
+  #   will be a {String} representing the module's name; the second argument
+  #   will be a {String} representing the bundle's name; the third, optional
+  #   argument will be an {Object} representing any services the module
+  #   provides.
+  #
+  # Emits `done` when loading of all modules has completed and no error has
   #   occurred. The first argument will be an {Object} containing the services
-  #   of any loaded modules that supply them, see {setService}. The `done` event
+  #   of any loaded modules that supply them, see {Bijous}. The `done` event
   #   could be subscribed to by the loading modules in order to execute a task
   #   once all modules are loaded. An example would be if a *server* module
   #   wanted to listen for connections once all modules were loaded.
+  #
+  # ```coffee
+  # exports = module.exports = (context, modules, done) ->
+  #     app = express()
+  #     context.on 'done', ->
+  #       app.listen 3000, -> console.log 'Listening on port 3000'
+  #     done null, { app: app }
+  # ```
   #
   # Returns `undefined`
   load: (bundle, callback) ->

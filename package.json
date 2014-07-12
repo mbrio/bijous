@@ -1,7 +1,7 @@
 {
   "name": "bijous",
   "version": "0.3.0",
-  "description": "An asynchronous module loader. Searches out modules within a file system using Klect and supplies an asynchronous means of initializing them. Initialized modules may provide a service that can be used by other modules and is made available to external code after loading has completed.",
+  "description": "An asynchronous module loader. Searches out modules within a file system using Klect and supplies an asynchronous means of initializing them. Initialized modules may provide a service that can be used by other modules.",
   "main": "lib/bijous.js",
   "engines": {
     "node": ">=0.10"
