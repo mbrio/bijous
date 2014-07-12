@@ -1,7 +1,7 @@
 path = require 'path'
 util = require 'util'
-async = require 'async'
-_ = require 'lodash'
+series = require 'array-series'
+_ = require 'underscore-plus'
 {EventEmitter} = require 'events'
 Klect = require 'klect'
 
@@ -112,7 +112,7 @@ loadModule = (def, services, done) ->
 # Returns: `undefined`
 setService = (def, services, service) ->
   if def.bundle is @defaultBundleName then services[def.name] = service
-  else _.merge services[def.bundle] ?= {}, _.object([def.name], [service])
+  else _.extend services[def.bundle] ?= {}, _.object([def.name], [service])
 
   return
 
@@ -328,7 +328,7 @@ class Bijous extends EventEmitter
     fns = @require(bundle).map (def) =>
       (done) => loadModule.call @, def, services, done
 
-    async.series fns, (error) =>
+    series fns, (error) =>
       if callback then callback error, services
 
       if error and not callback then @emit 'error', error

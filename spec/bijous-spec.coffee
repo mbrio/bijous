@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs'
 expect = require('chai').expect
-async = require 'async'
+series = require 'array-series'
 sinon = require 'sinon'
 Bijous = require '../lib/bijous'
 
@@ -205,7 +205,7 @@ describe 'Bijous', ->
             public: 'fixtures/public/*'
             empty: 'fixtures/empty/*'
 
-        series = [
+        fns = [
           (callback) ->
             bijous.load 'private', (error, services) ->
               expect(error).to.be.undefined
@@ -234,7 +234,7 @@ describe 'Bijous', ->
               callback error
         ]
 
-        async.series series, done
+        series fns, done
 
     context 'when an error occurs while loading a module', ->
       bijous = null
