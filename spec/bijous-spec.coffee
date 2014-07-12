@@ -2,8 +2,8 @@ path = require 'path'
 fs = require 'fs'
 expect = require('chai').expect
 async = require 'async'
+sinon = require 'sinon'
 Bijous = require '../lib/bijous'
-_ = require 'lodash'
 
 findModule = (modules, name) ->
   return true for module in modules when module.name is name
@@ -66,7 +66,7 @@ describe 'Bijous', ->
 
   describe '#list()', ->
     context 'when no bundle pattern is specified', ->
-      context 'when specifying only one bundle', ->
+      context 'and when specifying only one bundle', ->
         it 'should find all modules for all bundles', ->
           bijous = new Bijous
             bundles: 'fixtures/modules/*'
@@ -77,7 +77,7 @@ describe 'Bijous', ->
             'fixtures/modules/module3'
           ]
 
-      context 'when specifying multiple bundles', ->
+      context 'and when specifying multiple bundles', ->
         it 'should find all modules for all bundles', ->
           bijous = new Bijous
             bundles:
@@ -116,7 +116,7 @@ describe 'Bijous', ->
 
   describe '#require()', ->
     context 'when no bundle pattern is specified', ->
-      context 'when specifying only one bundle', ->
+      context 'and when specifying only one bundle', ->
         it 'should require all modules for all bundles', ->
           bijous = new Bijous
             bundles: 'fixtures/modules/*'
@@ -124,7 +124,7 @@ describe 'Bijous', ->
           modules = (obj.name for obj in bijous.require())
           expect(modules).to.have.members ['module1', 'module2', 'module3']
 
-      context 'when specifying multiple bundles', ->
+      context 'and when specifying multiple bundles', ->
         it 'should require all modules for all bundles', ->
           bijous = new Bijous
             bundles:
@@ -159,135 +159,136 @@ describe 'Bijous', ->
         expect(modules).to.be.empty
 
   describe '#load()', ->
-    it 'should load all modules', (done) ->
-      bijous = new Bijous
-        bundles: 'fixtures/modules/*'
+    context 'when no bundle pattern is specified', ->
+      context 'and when specifying only one bundle', ->
+        it 'should load all modules for all bundles', (done) ->
+          bijous = new Bijous
+            bundles: 'fixtures/modules/*'
 
-      bijous.load (error, modules) ->
-        expect(error).to.be.undefined
-        expect(modules).to.have.keys ['module1', 'module2', 'module3']
-        expect(modules.module1.name).to.equal 'module1'
-        expect(modules.module2.name).to.equal 'module2'
-        expect(modules.module3.name).to.equal 'module3'
+          bijous.load (error, services) ->
+            expect(error).to.be.undefined
+            expect(services).to.have.keys ['module1', 'module2', 'module3']
 
-        done()
+            names = (obj.name for key, obj of services)
+            expect(names).to.have.members ['module1', 'module2', 'module3']
 
-    it 'should load all modules when passed multiple bundles', (done) ->
-      bijous = new Bijous
-        bundles:
-          private: 'fixtures/modules/*'
-          public: 'fixtures/public/*'
-          empty: 'fixtures/empty/*'
+            done()
 
-      bijous.load (error, modules) ->
-        expect(error).to.be.undefined
-        expect(modules).to.have.keys ['private', 'public']
-        expect(modules.private).to.have.keys ['module1', 'module2', 'module3']
-        expect(modules.public).to.have.keys ['public1']
-
-        expect(modules.private.module1.name).to.equal 'module1'
-        expect(modules.private.module2.name).to.equal 'module2'
-        expect(modules.private.module3.name).to.equal 'module3'
-        expect(modules.public.public1.name).to.equal 'public1'
-
-        done()
-
-    it 'should load all modules pertaining to a specific bundle', (done) ->
-      async.series [
-        (callback) ->
+      context 'and when specifying multiple bundles', ->
+        it 'should load all modules for all bundles', (done) ->
           bijous = new Bijous
             bundles:
               private: 'fixtures/modules/*'
               public: 'fixtures/public/*'
               empty: 'fixtures/empty/*'
 
-          bijous.load 'private', (error, modules) ->
+          bijous.load (error, services) ->
             expect(error).to.be.undefined
-            expect(modules).to.have.keys ['private']
-            expect(modules.private).to.have.keys ['module1', 'module2',
+            expect(services).to.have.keys ['private', 'public']
+            expect(services.private).to.have.keys [ 'module1', 'module2',
               'module3']
+            expect(services.public).to.have.keys ['public1']
 
-            expect(modules.private.module1.name).to.equal 'module1'
-            expect(modules.private.module2.name).to.equal 'module2'
-            expect(modules.private.module3.name).to.equal 'module3'
+            names = (obj.name for key, obj of services.private)
+            expect(names).to.have.members ['module1', 'module2', 'module3']
 
-            callback null
-        (callback) ->
-          bijous = new Bijous
-            bundles:
-              private: 'fixtures/modules/*'
-              public: 'fixtures/public/*'
-              empty: 'fixtures/empty/*'
+            names = (obj.name for key, obj of services.public)
+            expect(names).to.have.members ['public1']
 
-          bijous.load 'public', (error, modules) ->
-            expect(error).to.be.undefined
-            expect(modules).to.have.keys ['public']
-            expect(modules.public).to.have.keys ['public1']
+            done()
 
-            expect(modules.public.public1.name).to.equal 'public1'
-            callback null
-        (callback) ->
-          bijous = new Bijous
-            bundles:
-              private: 'fixtures/modules/*'
-              public: 'fixtures/public/*'
-              empty: 'fixtures/empty/*'
+    context 'when a bundle pattern is specified', ->
+      it 'should load all modules pertaining to a specific bundle', (done) ->
+        bijous = new Bijous
+          bundles:
+            private: 'fixtures/modules/*'
+            public: 'fixtures/public/*'
+            empty: 'fixtures/empty/*'
 
-          bijous.load 'empty', (error, modules) ->
-            expect(error).to.be.undefined
-            expect(Object.keys(modules)).to.be.empty
-            callback null
-      ],
+        series = [
+          (callback) ->
+            bijous.load 'private', (error, services) ->
+              expect(error).to.be.undefined
+              expect(services).to.have.keys ['private']
+              expect(services.private).to.have.keys ['module1', 'module2',
+                'module3']
 
-      (err, results) ->
-        done err
+              names = (obj.name for key, obj of services.private)
+              expect(names).to.have.members ['module1', 'module2', 'module3']
 
-    it 'should load all modules and handle errors with callback', (done) ->
-      bijous = new Bijous
-        bundles: 'fixtures/errors/*'
+              callback error
+          (callback) ->
+            bijous.load 'public', (error, services) ->
+              expect(error).to.be.undefined
+              expect(services).to.have.keys ['public']
+              expect(services.public).to.have.keys ['public1']
 
-      bijous.load (error, modules) ->
-        expect(error).to.exist
-        expect(Object.keys(modules)).to.be.empty
-        done()
+              names = (obj.name for key, obj of services.public)
+              expect(names).to.have.members ['public1']
 
-  describe '#loaded', ->
-    it 'should emit the loaded event', (done) ->
-      bijous = new Bijous
-        bundles: 'fixtures/modules/*'
+              callback error
+          (callback) ->
+            bijous.load 'empty', (error, services) ->
+              expect(error).to.be.undefined
+              expect(Object.keys(services)).to.be.empty
+              callback error
+        ]
 
-      loadedCount = 0
+        async.series series, done
 
-      bijous.on 'loaded', -> loadedCount++
+    context 'when an error occurs while loading a module', ->
+      bijous = null
+      beforeEach -> bijous = new Bijous { bundles: 'fixtures/errors/*' }
 
-      bijous.load (error, modules) ->
-        expect(error).to.be.undefined
-        expect(loadedCount).to.equal 3
+      context 'and when a callback is supplied', ->
+        it 'should handle errors with callback', (done) ->
+          bijous.load (error, services) ->
+            expect(error).to.exist
+            expect(Object.keys(services)).to.be.empty
+            done()
 
-        done()
+        it 'should not emit the error event', (done) ->
+          callback = sinon.spy()
+          bijous.on 'error', callback
 
-  describe '#done', ->
-    it 'should emit the done event', (done) ->
-      bijous = new Bijous
-        bundles: 'fixtures/modules/*'
+          bijous.load (error, services) ->
+            cb = ->
+              expect(callback.called).to.be.false
+              done()
 
-      bijous.on 'done', (modules) ->
-        expect(modules).to.have.keys ['module1', 'module2', 'module3']
-        expect(modules.module1.name).to.equal 'module1'
-        expect(modules.module2.name).to.equal 'module2'
-        expect(modules.module3.name).to.equal 'module3'
+            setTimeout cb, 100
 
-        done()
+      context 'and when no callback is supplied', ->
+        it 'should emit the *error* event', (done) ->
+          bijous.on 'error', (err) ->
+            expect(err).to.exist
+            expect(err.message).to.equal 'error1'
+            done()
 
-      bijous.load()
+          bijous.load()
 
-  describe '#error', ->
-    it 'should emit the error event', (done) ->
-      bijous = new Bijous
-        bundles: 'fixtures/errors/*'
+    context 'when an individual module has completed loading successfully', ->
+      it 'should emit the *loaded* event and return any service', (done) ->
+        bijous = new Bijous { bundles: 'fixtures/modules/*' }
 
-      bijous.on 'error', (err) ->
-        expect(err.message).to.equal 'error1'
-        done()
+        callback = sinon.spy()
+        bijous.on 'loaded', callback
 
-      bijous.load()
+        bijous.load (error, services) ->
+          expect(error).to.be.undefined
+          expect(callback.calledThrice).to.be.true
+
+          done()
+
+    context 'when all modules have completed loading successfully', ->
+      it 'should emit the *done* event and return any services', (done) ->
+        bijous = new Bijous { bundles: 'fixtures/modules/*' }
+
+        bijous.on 'done', (services) ->
+          expect(services).to.have.keys ['module1', 'module2', 'module3']
+          names = (obj.name for key, obj of services)
+          expect(names).to.have.members ['module1', 'module2', 'module3']
+
+          done()
+
+        bijous.load()

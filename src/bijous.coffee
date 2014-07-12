@@ -5,194 +5,209 @@ _ = require 'lodash'
 {EventEmitter} = require 'events'
 Klect = require 'klect'
 
-# Public: Determines a module's name using it's path.
+# Public: Determines a module's name
 #
-# file - The path of the file as a {String}
+# The name generated corresponds with the name of the file with it's path and
+# extension removed.
+#
+# TODO: Use a library to convert non-javascript-esq names, Atom utilizes an
+# extension to the underscore module called `underscore-plus` to accomplish
+# this.
+#
+# file - The path of a file as a {String}
 #
 # ```coffee
 # getModuleName('/modules/module1.js')
 # # => 'module1'
 # ```
 #
-# Returns: A {String} representing the module's name without extension
+# Returns: A {String} representing the module's name
 getModuleName = (file) ->
   extname = path.extname file
   path.basename file, extname
 
-
 # Public: Loads a singular module as described by {Bijous}. Handles populating
-# the module's result object.
+# the module's service object if it provides one.
 #
-# def     - The module's definition as an {Object} with the following keys:
-#           :name - The module's name
-#           :bundle - The bundle's name
-#           :module - The module's load function
-# results - The results of all previously loaded modules as an {Object}
-# done    - Alerts bijous when the module has loaded, is a {Function}, the first
-#           argument will be an {Error} if one has occurred.
+# def      - The module's definition {Object} with the following keys:
+#            :name - The module's name
+#            :bundle - The bundle's name
+#            :module - The module's load function
+# services - The services returned by any previously loaded modules as an
+#            {Object}. The definition of this object can be found in
+#            {setService}.
+# done     - Callback {Function} that alerts {Bijous} when the module has
+#            loaded, the first argument will be an {Error} if one has occurred.
 #
-# Emits loaded when a module has successfully loaded. The first argument will be
-#   a {String} representing the module's name, the second argument will be a
-#   {String} representing the bundle's name, the third argument will be an
-#   {Object} containing the results of the module's execution.
+# Emits `loaded` when a module has successfully loaded. The first argument will
+#   be a {String} representing the module's name; the second argument will be a
+#   {String} representing the bundle's name; the third, optional argument will
+#   be an {Object} representing any services the module provides.
 #
 # Returns: `undefined`
-loadModule = (def, results, done) ->
-  def.module.call null, @, results, (error, result) =>
-    setResult.call(this, def, results, result) if result
+loadModule = (def, services, done) ->
+  def.module.call null, @, services, (error, service) =>
+    setService.call(this, def, services, service) if service
 
-    @emit 'loaded', def.name, def.bundle, results unless error
+    @emit 'loaded', def.name, def.bundle, services unless error
     done error
 
   return
 
-# Public: Sets a module's result, the result will be namespaced if the bundle
-# name is not the {Bijous.defaultBundleName}.
+# Public: A helper function that adds a module's service to the collection of
+# services returned by loading all modules.
 #
-# def     - The module's definition as an {Object} with the following keys:
-#           :name - The module's name
-#           :bundle - The bundle's name
-#           :module - The module's load function
-# results - The results of all previously loaded modules as an {Object}
-# result  - The result of the currently loaded module as an {Object}.
+# The collection {Object} contains provided services as a result of calling the
+# {Bijous#load} method. This object provides accessor properties named by their
+# module name and namespaced by their bundle name. If the bundle's name happens
+# to match {Bijous.defaultBundleName}, the service will *not* use namespacing
+# and apply the accessor property to the collection.
 #
 # ## Default Bundles Have No Namespace
+#
+# You would create a bundle with a default name by not passing in a `bundles`
+# option to the {Bijous} constructor; or by passing in either a {String} or an
+# {Array} as the `bundles` option to the {Bijous} constructor.
 #
 # ```coffee
 # Bijous = require 'bijous'
 #
-# # We define a new {Bijous} instance, using the default bundle configuration.
-# # This causes klect to use the {Bijous.defaultBundleName}, and bijous to
-# # store results without a namespace
+# # We define a new {Bijous} instance without passing in a `bundles` option.
+# # This causes Klect to use the {Bijous.defaultBundleName}, and Bijous to
+# # store services without a namespace
 # bijous = new Bijous()
 #
 # # We assume there is a module called *module1*
-# bijous.load (err, modules) ->
-#   console.log modules.module1
+# bijous.load (err, modules) -> console.log modules.module1
 #
-# # We define a new {Bijous} instance, specifying a bundle configuration with no
-# # name. This causes klect to use the {Bijous.defaultBundleName}, and bijous
-# # to store results without a namespace
-# bijous = new Bijous
-#   bundles: 'modules/!(routes)'
+# # We define a new {Bijous} instance by supplying only a {String} as the
+# # `bundles` option. This causes Klect to use the {Bijous.defaultBundleName},
+# # and Bijous to store services without a namespace
+# bijous = new Bijous { bundles: 'modules/!(routes)' }
 #
 # # We assume there is a module called *module1*
-# bijous.load (err, modules) ->
-#   console.log modules.module1
-#
-# # We define a new {Bijous} instance, specifying a bundle configuration with a
-# # name. This causes klect to use a bundle name, and bijous to namespace the
-# # results based on the bundle name
-# bijous = new Bijous
-#   bundles: { private: 'modules/!(routes)' }
-#
-# # We assume there is a module called *module1*
-# bijous.load (err, modules) ->
-#   console.log modules.private.module1
+# bijous.load (err, modules) -> console.log modules.module1
 # ```
 #
+# ## Specified Bundle Names Have Namespace
+#
+# ```coffee
+# # We define a new {Bijous} instance by supplying an {Object} as the `bundles`
+# # option. This causes Klect to use a bundle name, and Bijous to namespace the
+# # services based on the bundle name
+# bijous = new Bijous { bundles: { private: 'modules/!(routes)' } }
+#
+# # We assume there is a module called *module1*
+# bijous.load (err, modules) -> console.log modules.private.module1
+# ```
+#
+# def      - The module's definition {Object} with the following keys:
+#            :name - The module's name
+#            :bundle - The bundle's name
+#            :module - The module's load function
+# services - The services returned by any previously loaded modules as an
+#            {Object}. The definition of this object can be found in {Bijous}.
+# service  - The service {Object} the loaded module provides.
+#
 # Returns: `undefined`
-setResult = (def, results, result) ->
-  if def.bundle is @defaultBundleName then results[def.name] = result
-  else _.merge results[def.bundle] ?= {}, _.object([def.name], [result])
+setService = (def, services, service) ->
+  if def.bundle is @defaultBundleName then services[def.name] = service
+  else _.merge services[def.bundle] ?= {}, _.object([def.name], [service])
 
   return
 
 # Public: An asynchronous module loader. Searches out modules within a file
 # system using [Klect](https://github.com/awnist/klect) and supplies an
-# asynchronous means of initializing them.
+# asynchronous means of initializing them. Initialized modules may provide a
+# service that can be used by other modules and is made available to external
+# code after loading has completed.
 #
 # ## Module Definition
 #
-# Bijous modules are synonymous with klect bundles and can be retrieved and used
-# in much the same ways. What bijous adds is the ability to `load` and `require`
+# Bijous modules are synonymous with Klect bundles and can be retrieved and used
+# in much the same way. What Bijous adds is the ability to `load` and `require`
 # modules conforming to [node.js](http://nodejs.org/api/modules.html). Modules
-# used in this way must conform to bijous' module interface which is described
+# used in this way must conform to Bijous' module interface which is described
 # as a node module exporting a singular function with three arguments. The
 # first argument will be the {Bijous} instance loading the module, the second
-# argument will be an {Object} containing the results from previously loaded
-# modules, and the third argument will be a {Function} callback that alerts the
-# bijous instance when the module has completed loading. The callback function
+# argument will be an {Object} containing the services previously loaded modules
+# provide, and the third argument will be a {Function} callback that alerts the
+# {Bijous} instance when the module has completed loading. The callback function
 # has two arguments, the first argument will be an {Error} if one has occurred,
-# the second argument will be an optional {Object} containing pertinent results
-# from loading the module, see {setResult}.
+# the second argument will be an optional {Object} containing provided services
+# from all loaded modules, see {setService}.
+#
+# We can assume that the following code describes the module being loaded,
+# resides in a file called *modules/mobule1.coffee*, and provides a service
+# containing a pointer to an express app.
 #
 # ```coffee
-# # We can assume that the following four lines describes the module being
-# # loaded and resides in a file called *modules/mobule1.coffee*
 # exports = module.exports = (context, modules, done) ->
 #   # do something ...
-#   done null,
-#     app: express()
+#   done null, { app: express() }
 # ```
 #
 # ## Module Loading
 #
+# We can assume the rest of the code below lives in a separate file that has
+# access to the module specified above.
+#
 # ```coffee
-# # We can assume the rest of the code below lives in a separate file that
-# # has access to the module specified above
 # Bijous = require 'bijous'
 #
-# # Loads all modules
 # bijous = new Bijous()
 #
-# bijous.load (err, modules) ->
-#   # Access the results of module1
-#   console.log modules.module1
+# # Access the module1 service after it's been loaded
+# bijous.load (err, modules) -> console.log modules.module1
 #
-# # Overrides the cwd option and loads all modules relative to it
-# bijous = new Bijous
-#   cwd: '~/modules'
+# # Overrides the `cwd` option and loads all modules relative to it
+# bijous = new Bijous { cwd: '~/modules' }
 #
-# bijous.load (err, modules) ->
-#   # Access the results of module1
-#   console.log modules.module1
+# # Access the module1 service after it's been loaded
+# bijous.load (err, modules) -> console.log modules.module1
 #
-# # Overrides the bundles option and loads all modules accordingly
-# bijous = new Bijous
-#   bundles: 'modules/!(router)'
+# # Overrides the `bundles` option and loads all modules accordingly
+# bijous = new Bijous { bundles: 'modules/!(router)' }
 #
-# bijous.load (modules) ->
-#   # Access the results of module1
-#   console.log modules.module1
+# # Access the module1 service after it's been loaded
+# bijous.load (modules) -> console.log modules.module1
 #
-# # Overrides the bundles option with multi bundles and loads all modules
-# # one bundle's modules accordingly
+# # Overrides the `bundles` option with multiple bundles and loads all modules
 # bijous = new Bijous
 #   bundles:
 #     server: 'modules/!(router)'
 #     web: ['webModules/*', 'adminModules/*']
 #
+# # Access the module1 service, namespaced by the bundle name
 # bijous.load (err, modules) ->
-#   # Access the results of module1, notice it is namespaced by the bundle
-#   # name
 #   console.log modules.server.module1
 #   console.log modules.web.module2
 # ```
 class Bijous extends EventEmitter
-  # Public: The default bundle configuration for klect as a {String}. This
+  # Public: The default bundle configuration for Klect as a {String}. This
   # configuration describes how all modules are to be found.
-  # (default: `modules/*`). For more information see klect.
+  # (default: `modules/*`). For more information see
+  # [Klect](https://github.com/awnist/klect).
   @defaultBundles: 'modules/*'
 
-  # Public: The default bundle name to pass to klect as a {String}. When a
-  # bundle descriptor is passed from bijous to klect that is not an object
+  # Public: The default bundle name to pass to Klect as a {String}. When a
+  # bundle descriptor is passed from Bijous to Klect that is not an object
   # (e.g. a string or an array) this is the name used for the bundle. Bundle
-  # results that bear it's name are not namespaced when received from the `load`
-  # callback, see {setResult}. (default: `_`)
+  # services that bear it's name are not namespaced when received from the
+  # `load` callback, see {setService}. (default: `_`)
   @defaultBundleName: '_'
 
-  # Public: Instantiates a new bijous loader.
+  # Public: Instantiates a new {Bijous} loader.
   #
-  # options - The hash {Object} used to configure bijous. (default: {})
+  # options - The hash {Object} used to configure {Bijous}. (default: {})
   #           :cwd - The directory where modules can be found as a {String}.
   #                  Defaults to the directory the module's parent resides in.
   #                  (default: `path.dirname(module.parent.filename)`)
-  #           :bundles - The klect bundles descriptor as an {Object}, used to
+  #           :bundles - The Klect bundles descriptor as an {Object}, used to
   #                      find modules. (default: {Bijous.defaultBundles})
   #           :defaultBundleName - The {String} name to use as the default
-  #                                bundle for *klect*. When passing in a string
-  #                                or an array for `bundles` this is the name
+  #                                bundle for Klect. When passing in a {String}
+  #                                or an {Array} for `bundles` this is the name
   #                                used as the bundle name. (default:
   #                                {Bijous.defaultBundleName})
   constructor: ({@cwd, @bundles, @defaultBundleName} = {}) ->
@@ -211,15 +226,15 @@ class Bijous extends EventEmitter
   #
   # # List all modules
   # bijous = new Bijous
-  #   bundles:
-  #     public: 'modules/public/*'
-  #     private: 'modules/private/*'
+  #     bundles:
+  #       public: 'modules/public/*'
+  #       private: 'modules/private/*'
   #
   # allBundles = bijous.list()
   # onlyPublicBundles = bijous.list 'public'
   # ```
   #
-  # Returns an {Array} of klect bundles
+  # Returns an {Array} of Klect bundles
   list: (bundle) ->
     klect = new Klect
       cwd: @cwd
@@ -239,9 +254,9 @@ class Bijous extends EventEmitter
   #
   # # Require all modules
   # bijous = new Bijous
-  #   bundles:
-  #     public: 'modules/public/*'
-  #     private: 'modules/private/*'
+  #     bundles:
+  #       public: 'modules/public/*'
+  #       private: 'modules/private/*'
   #
   # allBundles = bijous.require()
   # onlyPublicBundles = bijous.require 'public'
@@ -262,11 +277,12 @@ class Bijous extends EventEmitter
   # bundles, and executes the returned module function. When a bundle name is
   # supplied it loads the files only for the specified bundle.
   #
-  # bundle - The bundle name as a {String} to use when retrieving modules.
-  #          (optional)
+  # bundle   - The bundle name as a {String} to use when retrieving modules.
+  #            (optional)
   # callback - The callback {Function} to use when all modules are loaded. The
   #            first argument will be an {Error} if one has occurred, the second
-  #            will be the results of all loaded modules see {setResult}.
+  #            will be the services of any loaded modules that provide them,
+  #            see {setService}.
   #
   # ```coffee
   # Bijous = require 'bijous'
@@ -276,53 +292,47 @@ class Bijous extends EventEmitter
   # bijous.load()
   #
   # # Loads only modules belonging to the module1 bundle
-  # bijous = new Bijous
-  #   bundles:
-  #     module1: ['modules/module1']
-  #
+  # bijous = new Bijous { bundles: { module1: ['modules/module1'] } }
   # bijous.load 'module1'
   #
   # # Loads all modules and executes a callback once all are loaded
   # bijous = new Bijous()
+  # bijous.load (error, services) ->
+  #     throw error if error
+  #     console.log services
   #
-  # bijous.load (error, results) ->
-  #   throw error if error
-  #   console.log results
-  #
-  # # Loads only modules belonging to the *module1* bundle and executes a
+  # # Loads only modules belonging to the module1 bundle and executes a
   # # callback once all are loaded
-  # bijous = new Bijous
-  #   bundles:
-  #     bundle1: ['modules/module1']
-  #
+  # bijous = new Bijous { bundles: { bundle1: ['modules/module1'] } }
   # bijous.load 'bundle1', (error, modules) ->
-  #   throw error if error
-  #   console.log modules.bundle1.module1
+  #     throw error if error
+  #     console.log modules.bundle1.module1
   # ```
   #
-  # Emits error if an error has occurred while loading any module. The first
-  #   argument will be the {Error} that has occurred.
+  # Emits `error` if an error has occurred while loading any module and no
+  #   callback argument has been supplied. The first argument will be the
+  #   {Error} that has occurred.
   #
-  # Emits done when loading of modules has completed and no error has occurred.
-  #   The first argument will be an {Object} containing the results of all
-  #   loaded modules, see {setResult}. The `done` event could be subscribed to
-  #   by the loaded module in order to execute a task once all modules are
-  #   loaded. An example would be if a *server* module wanted to listen for
-  #   connections once all modules were loaded.
+  # Emits `done` when loading of modules has completed and no error has
+  #   occurred. The first argument will be an {Object} containing the services
+  #   of any loaded modules that supply them, see {setService}. The `done` event
+  #   could be subscribed to by the loading modules in order to execute a task
+  #   once all modules are loaded. An example would be if a *server* module
+  #   wanted to listen for connections once all modules were loaded.
   #
   # Returns `undefined`
   load: (bundle, callback) ->
     [callback, bundle] = [bundle, null] if 'function' is typeof bundle
-    results = {}
+    services = {}
 
     fns = @require(bundle).map (def) =>
-      (done) => loadModule.call @, def, results, done
+      (done) => loadModule.call @, def, services, done
 
     async.series fns, (error) =>
-      if callback then callback error, results
+      if callback then callback error, services
 
       if error and not callback then @emit 'error', error
-      else if not error then @emit 'done', results
+      else if not error then @emit 'done', services
 
     return
 

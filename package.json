@@ -1,26 +1,27 @@
 {
   "name": "bijous",
-  "version": "0.2.1",
-  "description": "An asynchronous module loader",
+  "version": "0.2.2",
+  "description": "An asynchronous module loader. Searches out modules within a file system using Klect and supplies an asynchronous means of initializing them. Initialized modules may provide a service that can be used by other modules and is made available to external code after loading has completed.",
   "main": "lib/bijous.js",
   "engines": {
     "node": ">=0.10"
   },
   "dependencies": {
     "async": "^0.9.0",
-    "coffee-script": "^1.7.1",
     "klect": "^0.1.3",
     "lodash": "^2.4.1"
   },
   "devDependencies": {
     "chai": "^1.9.1",
+    "coffee-script": "^1.7.1",
     "gulp": "^3.8.5",
     "gulp-biscotto": "0.0.6",
     "gulp-coffee": "^2.0.1",
     "gulp-coffeelint": "^0.3.3",
     "gulp-istanbul": "^0.2.0",
     "gulp-mocha": "^0.4.1",
-    "gulp-util": "^2.2.19"
+    "gulp-util": "^2.2.19",
+    "sinon": "^1.10.3"
   },
   "scripts": {
     "test": "./node_modules/.bin/gulp test",

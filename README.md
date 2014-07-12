@@ -5,7 +5,11 @@
 
 [![NPM Status](https://nodei.co/npm/bijous.png?downloads=true)](https://npmjs.org/package/bijous)
 
-An asynchronous module loader for node.js.
+An asynchronous module loader. Searches out modules within a file system using
+[Klect](https://github.com/awnist/klect) and supplies an asynchronous means of
+initializing them. Initialized modules may provide a service that can be used by
+other modules and is made available to external code after loading has
+completed.
 
 ## Installation
 
