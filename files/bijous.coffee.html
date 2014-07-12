@@ -123,13 +123,13 @@
       </a>
     </span>
     <span class='desc'>
-      Determines a module&#39;s name using it&#39;s path.
+      Determines a module&#39;s name The name generated corresponds with the name of the file with it&#39;s path and extension removed.
     </span>
   </li>
   <li>
     <span class='signature'>
       <a href='#loadModule-file'>
-        ? <strong>loadModule</strong>(def, results, done)
+        ? <strong>loadModule</strong>(def, services, done)
       </a>
     </span>
     <span class='desc'>
@@ -138,12 +138,12 @@
   </li>
   <li>
     <span class='signature'>
-      <a href='#setResult-file'>
-        ? <strong>setResult</strong>(def, results, result)
+      <a href='#setService-file'>
+        ? <strong>setService</strong>(def, services, service)
       </a>
     </span>
     <span class='desc'>
-      Sets a module&#39;s result, the result will be namespaced if the bundle name is not the {Bijous.defaultBundleName}.
+      A helper function that adds a module&#39;s service to the collection of services returned by loading all modules.
     </span>
   </li>
 </ul>
@@ -154,10 +154,13 @@
       String ? <strong>getModuleName</strong>(file)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L18'>Source</a>
+/src&#47;bijous.coffee#L25'>Source</a>
     </p>
     <div class='docstring'>
-  <p>Determines a module&#39;s name using it&#39;s path.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#39;)
+  <p>Determines a module&#39;s name</p><p>The name generated corresponds with the name of the file with it&#39;s path and
+extension removed.</p><p>TODO: Use a library to convert non-javascript-esq names, Atom utilizes an
+extension to the underscore module called <code>underscore-plus</code> to accomplish
+this.</p><pre><code class="lang-coffee">getModuleName(&#39;/modules/module1.js&#39;)
 # =&gt; &#39;module1&#39;
 </code></pre>
 
@@ -169,7 +172,7 @@
       <span class='type'>(String)</span>
       <span class='name'>file</span>
       &mdash;
-      <span class='desc'>The path of the file as a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a></span>
+      <span class='desc'>The path of a file as a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a></span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -178,23 +181,23 @@
       <span class='type'></span>
       (<tt>String</tt>)
       &mdash;
-      <span class='desc'>Returns: A <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the module&#39;s name without extension</span>
+      <span class='desc'>Returns: A <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the module&#39;s name</span>
     </li>
   </ul>
 </div>
   </div>
   <div class='method_details'>
     <p class='signature' id='loadModule-file'>
-      ? <strong>loadModule</strong>(def, results, done)
+      ? <strong>loadModule</strong>(def, services, done)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L40'>Source</a>
+/src&#47;bijous.coffee#L48'>Source</a>
     </p>
     <div class='docstring'>
-  <p>Loads a singular module as described by <a href='../classes/Bijous.html'>Bijous</a>. Handles populating the module&#39;s result object.</p><p>Emits loaded when a module has successfully loaded. The first argument will be
-  a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the module&#39;s name, the second argument will be a
-  <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the bundle&#39;s name, the third argument will be an
-  <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing the results of the module&#39;s execution.</p>
+  <p>Loads a singular module as described by <a href='../classes/Bijous.html'>Bijous</a>. Handles populating the module&#39;s service object if it provides one.</p><p>Emits <code>loaded</code> when a module has successfully loaded. The first argument will
+  be a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the module&#39;s name; the second argument will be a
+  <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> representing the bundle&#39;s name; the third, optional argument will
+  be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> representing any services the module provides.</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -203,7 +206,7 @@
       <span class='type'>(Object)</span>
       <span class='name'>def</span>
       &mdash;
-      <span class='desc'>The module&#39;s definition as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> with the following keys:</span>
+      <span class='desc'>The module&#39;s definition <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> with the following keys:</span>
     </li>
     <ul class='options'>
       <li>
@@ -223,16 +226,15 @@
       </li>
     </ul>
     <li>
-      <span class='type'>(Object)</span>
-      <span class='name'>results</span>
+      <span class='name'>services</span>
       &mdash;
-      <span class='desc'>The results of all previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a></span>
+      <span class='desc'>The services returned by any previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>. The definition of this object can be found in {setService}.</span>
     </li>
     <li>
       <span class='type'>(Function)</span>
       <span class='name'>done</span>
       &mdash;
-      <span class='desc'>Alerts bijous when the module has loaded, is a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a>, the first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred.</span>
+      <span class='desc'>Callback <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a> that alerts <a href='../classes/Bijous.html'>Bijous</a> when the module has loaded, the first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred.</span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -245,44 +247,45 @@
 </div>
   </div>
   <div class='method_details'>
-    <p class='signature' id='setResult-file'>
-      ? <strong>setResult</strong>(def, results, result)
+    <p class='signature' id='setService-file'>
+      ? <strong>setService</strong>(def, services, service)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L95'>Source</a>
+/src&#47;bijous.coffee#L113'>Source</a>
     </p>
     <div class='docstring'>
-  <p>Sets a module&#39;s result, the result will be namespaced if the bundle name is not the {Bijous.defaultBundleName}.</p><h2 id="default-bundles-have-no-namespace">Default Bundles Have No Namespace</h2>
-<pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
+  <p>A helper function that adds a module&#39;s service to the collection of services returned by loading all modules.</p><p>The collection <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> contains provided services as a result of calling the
+{Bijous#load} method. This object provides accessor properties named by their
+module name and namespaced by their bundle name. If the bundle&#39;s name happens
+to match {Bijous.defaultBundleName}, the service will <em>not</em> use namespacing
+and apply the accessor property to the collection.</p><h2 id="default-bundles-have-no-namespace">Default Bundles Have No Namespace</h2><p>You would create a bundle with a default name by not passing in a <code>bundles</code>
+option to the <a href='../classes/Bijous.html'>Bijous</a> constructor; or by passing in either a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> or an
+<a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array'>Array</a> as the <code>bundles</code> option to the <a href='../classes/Bijous.html'>Bijous</a> constructor.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
 
-# We define a new {Bijous} instance, using the default bundle configuration.
-# This causes klect to use the {Bijous.defaultBundleName}, and bijous to
-# store results without a namespace
+# We define a new {Bijous} instance without passing in a `bundles` option.
+# This causes Klect to use the {Bijous.defaultBundleName}, and Bijous to
+# store services without a namespace
 bijous = new Bijous()
 
 # We assume there is a module called *module1*
-bijous.load (err, modules) -&gt;
-  console.log modules.module1
+bijous.load (err, modules) -&gt; console.log modules.module1
 
-# We define a new {Bijous} instance, specifying a bundle configuration with no
-# name. This causes klect to use the {Bijous.defaultBundleName}, and bijous
-# to store results without a namespace
-bijous = new Bijous
-  bundles: &#39;modules/!(routes)&#39;
+# We define a new {Bijous} instance by supplying only a {String} as the
+# `bundles` option. This causes Klect to use the {Bijous.defaultBundleName},
+# and Bijous to store services without a namespace
+bijous = new Bijous { bundles: &#39;modules/!(routes)&#39; }
 
 # We assume there is a module called *module1*
-bijous.load (err, modules) -&gt;
-  console.log modules.module1
-
-# We define a new {Bijous} instance, specifying a bundle configuration with a
-# name. This causes klect to use a bundle name, and bijous to namespace the
-# results based on the bundle name
-bijous = new Bijous
-  bundles: { private: &#39;modules/!(routes)&#39; }
+bijous.load (err, modules) -&gt; console.log modules.module1
+</code></pre>
+<h2 id="specified-bundle-names-have-namespace">Specified Bundle Names Have Namespace</h2>
+<pre><code class="lang-coffee"># We define a new {Bijous} instance by supplying an {Object} as the `bundles`
+# option. This causes Klect to use a bundle name, and Bijous to namespace the
+# services based on the bundle name
+bijous = new Bijous { bundles: { private: &#39;modules/!(routes)&#39; } }
 
 # We assume there is a module called *module1*
-bijous.load (err, modules) -&gt;
-  console.log modules.private.module1
+bijous.load (err, modules) -&gt; console.log modules.private.module1
 </code></pre>
 
 </div>
@@ -293,7 +296,7 @@ bijous.load (err, modules) -&gt;
       <span class='type'>(Object)</span>
       <span class='name'>def</span>
       &mdash;
-      <span class='desc'>The module&#39;s definition as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> with the following keys:</span>
+      <span class='desc'>The module&#39;s definition <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> with the following keys:</span>
     </li>
     <ul class='options'>
       <li>
@@ -313,16 +316,15 @@ bijous.load (err, modules) -&gt;
       </li>
     </ul>
     <li>
-      <span class='type'>(Object)</span>
-      <span class='name'>results</span>
+      <span class='name'>services</span>
       &mdash;
-      <span class='desc'>The results of all previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a></span>
+      <span class='desc'>The services returned by any previously loaded modules as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>. The definition of this object can be found in <a href='../classes/Bijous.html'>Bijous</a>.</span>
     </li>
     <li>
       <span class='type'>(Object)</span>
-      <span class='name'>result</span>
+      <span class='name'>service</span>
       &mdash;
-      <span class='desc'>The result of the currently loaded module as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>.</span>
+      <span class='desc'>The service <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> the loaded module provides.</span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -338,7 +340,7 @@ bijous.load (err, modules) -&gt;
     </div>
     <div id='footer'>
   Generated on
-  Tue Jul 08 2014 16:22:43 GMT-0400 (EDT)
+  Fri Jul 11 2014 22:46:59 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4

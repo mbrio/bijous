@@ -122,62 +122,51 @@
       </table>
       <h2>Overview</h2>
       <div class='docstring'>
-  <p>An asynchronous module loader. Searches out modules within a file system using <a href="https://github.com/awnist/klect">Klect</a> and supplies an asynchronous means of initializing them.</p><h2 id="module-definition">Module Definition</h2><p>Bijous modules are synonymous with klect bundles and can be retrieved and used
-in much the same ways. What bijous adds is the ability to <code>load</code> and <code>require</code>
+  <p>An asynchronous module loader. Searches out modules within a file system using <a href="https://github.com/awnist/klect">Klect</a> and supplies an asynchronous means of initializing them. Initialized modules may provide a service that can be used by other modules and is made available to external code after loading has completed.</p><h2 id="module-definition">Module Definition</h2><p>Bijous modules are synonymous with Klect bundles and can be retrieved and used
+in much the same way. What Bijous adds is the ability to <code>load</code> and <code>require</code>
 modules conforming to <a href="http://nodejs.org/api/modules.html">node.js</a>. Modules
-used in this way must conform to bijous&#39; module interface which is described
+used in this way must conform to Bijous&#39; module interface which is described
 as a node module exporting a singular function with three arguments. The
 first argument will be the <a href='../classes/Bijous.html'>Bijous</a> instance loading the module, the second
-argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing the results from previously loaded
-modules, and the third argument will be a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a> callback that alerts the
-bijous instance when the module has completed loading. The callback function
+argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing the services previously loaded modules
+provide, and the third argument will be a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a> callback that alerts the
+<a href='../classes/Bijous.html'>Bijous</a> instance when the module has completed loading. The callback function
 has two arguments, the first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred,
-the second argument will be an optional <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing pertinent results
-from loading the module, see {setResult}.</p><pre><code class="lang-coffee"># We can assume that the following four lines describes the module being
-# loaded and resides in a file called *modules/mobule1.coffee*
-exports = module.exports = (context, modules, done) -&gt;
+the second argument will be an optional <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing provided services
+from all loaded modules, see {setService}.</p><p>We can assume that the following code describes the module being loaded,
+resides in a file called <em>modules/mobule1.coffee</em>, and provides a service
+containing a pointer to an express app.</p><pre><code class="lang-coffee">exports = module.exports = (context, modules, done) -&gt;
   # do something ...
-  done null,
-    app: express()
+  done null, { app: express() }
 </code></pre>
-<h2 id="module-loading">Module Loading</h2>
-<pre><code class="lang-coffee"># We can assume the rest of the code below lives in a separate file that
-# has access to the module specified above
-Bijous = require &#39;bijous&#39;
+<h2 id="module-loading">Module Loading</h2><p>We can assume the rest of the code below lives in a separate file that has
+access to the module specified above.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
 
-# Loads all modules
 bijous = new Bijous()
 
-bijous.load (err, modules) -&gt;
-  # Access the results of module1
-  console.log modules.module1
+# Access the module1 service after it&#39;s been loaded
+bijous.load (err, modules) -&gt; console.log modules.module1
 
-# Overrides the cwd option and loads all modules relative to it
-bijous = new Bijous
-  cwd: &#39;~/modules&#39;
+# Overrides the `cwd` option and loads all modules relative to it
+bijous = new Bijous { cwd: &#39;~/modules&#39; }
 
-bijous.load (err, modules) -&gt;
-  # Access the results of module1
-  console.log modules.module1
+# Access the module1 service after it&#39;s been loaded
+bijous.load (err, modules) -&gt; console.log modules.module1
 
-# Overrides the bundles option and loads all modules accordingly
-bijous = new Bijous
-  bundles: &#39;modules/!(router)&#39;
+# Overrides the `bundles` option and loads all modules accordingly
+bijous = new Bijous { bundles: &#39;modules/!(router)&#39; }
 
-bijous.load (modules) -&gt;
-  # Access the results of module1
-  console.log modules.module1
+# Access the module1 service after it&#39;s been loaded
+bijous.load (modules) -&gt; console.log modules.module1
 
-# Overrides the bundles option with multi bundles and loads all modules
-# one bundle&#39;s modules accordingly
+# Overrides the `bundles` option with multiple bundles and loads all modules
 bijous = new Bijous
   bundles:
     server: &#39;modules/!(router)&#39;
     web: [&#39;webModules/*&#39;, &#39;adminModules/*&#39;]
 
+# Access the module1 service, namespaced by the bundle name
 bijous.load (err, modules) -&gt;
-  # Access the results of module1, notice it is namespaced by the bundle
-  # name
   console.log modules.server.module1
   console.log modules.web.module2
 </code></pre>
@@ -194,7 +183,7 @@ bijous.load (err, modules) -&gt;
       </a>
     </span>
     <span class='desc'>
-      Instantiates a new bijous loader.
+      Instantiates a new <a href='../classes/Bijous.html'>Bijous</a> loader.
     </span>
   </li>
   <li>
@@ -235,10 +224,10 @@ bijous.load (err, modules) -&gt;
       ::<strong>constructor</strong>({this, this, this}={})
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L190'>Source</a>
+/src&#47;bijous.coffee#L204'>Source</a>
     </p>
     <div class='docstring'>
-  <p>Instantiates a new bijous loader.</p>
+  <p>Instantiates a new <a href='../classes/Bijous.html'>Bijous</a> loader.</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -247,7 +236,7 @@ bijous.load (err, modules) -&gt;
       <span class='type'>(Object)</span>
       <span class='name'>options</span>
       &mdash;
-      <span class='desc'>The hash <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> used to configure bijous. (default: {})</span>
+      <span class='desc'>The hash <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> used to configure <a href='../classes/Bijous.html'>Bijous</a>. (default: {})</span>
     </li>
     <ul class='options'>
       <li>
@@ -260,13 +249,13 @@ bijous.load (err, modules) -&gt;
         <span class='type'>(Object)</span>
         <span class='name'>bundles</span>
         &mdash;
-        <span class='desc'>The klect bundles descriptor as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>, used to find modules. (default: {Bijous.defaultBundles})</span>
+        <span class='desc'>The Klect bundles descriptor as an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a>, used to find modules. (default: {Bijous.defaultBundles})</span>
       </li>
       <li>
         <span class='type'>(String)</span>
         <span class='name'>defaultBundleName</span>
         &mdash;
-        <span class='desc'>The <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> name to use as the default bundle for <em>klect</em>. When passing in a string or an array for <code>bundles</code> this is the name used as the bundle name. (default: {Bijous.defaultBundleName})</span>
+        <span class='desc'>The <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> name to use as the default bundle for Klect. When passing in a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> or an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array'>Array</a> for <code>bundles</code> this is the name used as the bundle name. (default: {Bijous.defaultBundleName})</span>
       </li>
     </ul>
   </ul>
@@ -280,16 +269,16 @@ bijous.load (err, modules) -&gt;
       Array ::<strong>list</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L215'>Source</a>
+/src&#47;bijous.coffee#L229'>Source</a>
     </p>
     <div class='docstring'>
   <p>Retrieves all modules found for it&#39;s bundles. When a bundle name is supplied it retrieves files only for the specified bundle.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
 
 # List all modules
 bijous = new Bijous
-bundles:
-  public: &#39;modules/public/*&#39;
-  private: &#39;modules/private/*&#39;
+  bundles:
+    public: &#39;modules/public/*&#39;
+    private: &#39;modules/private/*&#39;
 
 allBundles = bijous.list()
 onlyPublicBundles = bijous.list &#39;public&#39;
@@ -312,7 +301,7 @@ onlyPublicBundles = bijous.list &#39;public&#39;
       <span class='type'></span>
       (<tt>Array</tt>)
       &mdash;
-      <span class='desc'>Returns an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array'>Array</a> of klect bundles</span>
+      <span class='desc'>Returns an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array'>Array</a> of Klect bundles</span>
     </li>
   </ul>
 </div>
@@ -322,7 +311,7 @@ onlyPublicBundles = bijous.list &#39;public&#39;
       ::<strong>load</strong>(bundle, callback)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L306'>Source</a>
+/src&#47;bijous.coffee#L315'>Source</a>
     </p>
     <div class='docstring'>
   <p>Calls node&#39;s <code>require</code> function for all module files found for it&#39;s bundles, and executes the returned module function. When a bundle name is supplied it loads the files only for the specified bundle.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
@@ -332,35 +321,29 @@ bijous = new Bijous()
 bijous.load()
 
 # Loads only modules belonging to the module1 bundle
-bijous = new Bijous
-bundles:
-  module1: [&#39;modules/module1&#39;]
-
+bijous = new Bijous { bundles: { module1: [&#39;modules/module1&#39;] } }
 bijous.load &#39;module1&#39;
 
 # Loads all modules and executes a callback once all are loaded
 bijous = new Bijous()
+bijous.load (error, services) -&gt;
+  throw error if error
+  console.log services
 
-bijous.load (error, results) -&gt;
-throw error if error
-console.log results
-
-# Loads only modules belonging to the *module1* bundle and executes a
+# Loads only modules belonging to the module1 bundle and executes a
 # callback once all are loaded
-bijous = new Bijous
-bundles:
-  bundle1: [&#39;modules/module1&#39;]
-
+bijous = new Bijous { bundles: { bundle1: [&#39;modules/module1&#39;] } }
 bijous.load &#39;bundle1&#39;, (error, modules) -&gt;
-throw error if error
-console.log modules.bundle1.module1
-</code></pre><p>Emits error if an error has occurred while loading any module. The first
-argument will be the <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> that has occurred.</p><p>Emits done when loading of modules has completed and no error has occurred.
-The first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing the results of all
-loaded modules, see {setResult}. The <code>done</code> event could be subscribed to
-by the loaded module in order to execute a task once all modules are
-loaded. An example would be if a <em>server</em> module wanted to listen for
-connections once all modules were loaded.</p>
+  throw error if error
+  console.log modules.bundle1.module1
+</code></pre><p>Emits <code>error</code> if an error has occurred while loading any module and no
+callback argument has been supplied. The first argument will be the
+<a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> that has occurred.</p><p>Emits <code>done</code> when loading of modules has completed and no error has
+occurred. The first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing the services
+of any loaded modules that supply them, see {setService}. The <code>done</code> event
+could be subscribed to by the loading modules in order to execute a task
+once all modules are loaded. An example would be if a <em>server</em> module
+wanted to listen for connections once all modules were loaded.</p>
 </div>
 <div class='tags'>
   <h3>Parameters:</h3>
@@ -375,7 +358,7 @@ connections once all modules were loaded.</p>
       <span class='type'>(Function)</span>
       <span class='name'>callback</span>
       &mdash;
-      <span class='desc'>The callback <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a> to use when all modules are loaded. The first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred, the second will be the results of all loaded modules see {setResult}.</span>
+      <span class='desc'>The callback <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function'>Function</a> to use when all modules are loaded. The first argument will be an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred, the second will be the services of any loaded modules that provide them, see {setService}.</span>
     </li>
   </ul>
   <h3>Returns:</h3>
@@ -392,16 +375,16 @@ connections once all modules were loaded.</p>
       Array ::<strong>require</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.2.1
-/src&#47;bijous.coffee#L246'>Source</a>
+/src&#47;bijous.coffee#L260'>Source</a>
     </p>
     <div class='docstring'>
   <p>Calls node&#39;s <code>require</code> function for all module files found for it&#39;s bundles. When a bundle name is supplied it calls <code>require</code> with files associated only with the specified bundle.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
 
 # Require all modules
 bijous = new Bijous
-bundles:
-  public: &#39;modules/public/*&#39;
-  private: &#39;modules/private/*&#39;
+  bundles:
+    public: &#39;modules/public/*&#39;
+    private: &#39;modules/private/*&#39;
 
 allBundles = bijous.require()
 onlyPublicBundles = bijous.require &#39;public&#39;
@@ -454,7 +437,7 @@ onlyPublicBundles = bijous.require &#39;public&#39;
     </div>
     <div id='footer'>
   Generated on
-  Tue Jul 08 2014 16:22:43 GMT-0400 (EDT)
+  Fri Jul 11 2014 22:46:59 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4
