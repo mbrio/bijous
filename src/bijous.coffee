@@ -8,23 +8,25 @@ Klect = require 'klect'
 # Public: Determines a module's name
 #
 # The name generated corresponds with the name of the file with it's path and
-# extension removed.
-#
-# TODO: Use a library to convert non-javascript-esq names, Atom utilizes an
-# extension to the underscore module called `underscore-plus` to accomplish
-# this.
+# extension removed passed through `camelize` in `underscore-plus`.
 #
 # file - The path of a file as a {String}
 #
 # ```coffee
 # getModuleName('/modules/module1.js')
 # # => 'module1'
+#
+# getModuleName('/modules/web-server.js')
+# # => 'webServer'
+#
+# getModuleName('/modules/chat_server.js')
+# # => 'chatServer'
 # ```
 #
 # Returns: A {String} representing the module's name
 getModuleName = (file) ->
   extname = path.extname file
-  path.basename file, extname
+  _.camelize path.basename(file, extname)
 
 # Public: Loads a singular module as described by {Bijous}. Handles populating
 # the module's service object if it provides one.
