@@ -134,7 +134,7 @@ loading. The callback function has two arguments, the first argument will be
 an <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Error'>Error</a> if one has occurred, the second argument will be an optional
 <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object'>Object</a> containing provided services from all loaded modules.</p><h4 id="service-object-naming">Service Object Naming</h4><p>The service object provides accessor properties corresponding to their module
 name and namespaced by their bundle name.</p><h5 id="module-names">Module Names</h5><p>The module&#39;s name is the name of it&#39;s file without the path and extension
-passed as an argument to <code>_.camelize(path)</code>.</p><h5 id="bundle-name-and-namespacing">Bundle Name and Namespacing</h5><p>If the bundle&#39;s name happens to match the defaultBundleName
+passed as an argument to both <code>parameterize</code> and <code>camelize</code>.</p><h5 id="bundle-name-and-namespacing">Bundle Name and Namespacing</h5><p>If the bundle&#39;s name happens to match the defaultBundleName
 (see <a href='../classes/Bijous.html#constructor-instance'>Bijous::constructor</a>), the service will <em>not</em> use namespacing and
 instead apply the accessor property directly to the service object.</p><h6 id="default-bundles-have-no-namespace">Default Bundles Have No Namespace</h6><p>You would create a bundle with a default name by not passing in a <code>bundles</code>
 option to <a href='../classes/Bijous.html#constructor-instance'>Bijous::constructor</a> or by passing in either a <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/String'>String</a> or an
@@ -256,7 +256,7 @@ bijous.load (err, modules) -&gt;
       ::<strong>constructor</strong>({this, this, this}={})
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.3.1
-/src&#47;bijous.coffee#L209'>Source</a>
+/src&#47;bijous.coffee#L211'>Source</a>
     </p>
     <div class='docstring'>
   <p>Instantiates a new <a href='../classes/Bijous.html'>Bijous</a> loader.</p>
@@ -301,7 +301,7 @@ bijous.load (err, modules) -&gt;
       Array ::<strong>list</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.3.1
-/src&#47;bijous.coffee#L234'>Source</a>
+/src&#47;bijous.coffee#L236'>Source</a>
     </p>
     <div class='docstring'>
   <p>Retrieves all modules found for it&#39;s bundles. When a bundle name is supplied it retrieves files only for the specified bundle.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
@@ -343,7 +343,7 @@ onlyPublicBundles = bijous.list &#39;public&#39;
       ::<strong>load</strong>(bundle, callback)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.3.1
-/src&#47;bijous.coffee#L335'>Source</a>
+/src&#47;bijous.coffee#L337'>Source</a>
     </p>
     <div class='docstring'>
   <p>Calls node&#39;s <code>require</code> function for all module files found for it&#39;s bundles, and executes the returned module function. When a bundle name or pattern is supplied it loads the files associated only with the specified bundles.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
@@ -417,7 +417,7 @@ wanted to listen for connections once all modules were loaded.</p><pre><code cla
       Array ::<strong>require</strong>(bundle)
       <a class='gh-link' href='https:&#47;&#47;github.com&#47;mbrio&#47;bijous
 &#47;blob&#47;v0.3.1
-/src&#47;bijous.coffee#L265'>Source</a>
+/src&#47;bijous.coffee#L267'>Source</a>
     </p>
     <div class='docstring'>
   <p>Calls node&#39;s <code>require</code> function for all module files found for it&#39;s bundles. When a bundle name or pattern is supplied it calls <code>require</code> with files associated only with the specified bundles.</p><pre><code class="lang-coffee">Bijous = require &#39;bijous&#39;
@@ -479,7 +479,7 @@ onlyPublicBundles = bijous.require &#39;public&#39;
     </div>
     <div id='footer'>
   Generated on
-  Sat Jul 12 2014 17:05:20 GMT-0400 (EDT)
+  Sat Jul 12 2014 21:01:27 GMT-0400 (EDT)
   by
   <a href='https://github.com/gjtorikian/biscotto' title='TomDoc-CoffeeScript API documentation generator'>Biscotto</a>
   v2.1.4
