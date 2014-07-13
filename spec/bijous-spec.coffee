@@ -221,7 +221,6 @@ describe 'Bijous', ->
             bijous.load 'public', (error, services) ->
               expect(error).to.be.undefined
               expect(services).to.have.keys ['public']
-              console.log services.public
               expect(services.public).to.have.keys ['public1', 'publicServer']
 
               names = (obj.name for key, obj of services.public)

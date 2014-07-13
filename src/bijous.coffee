@@ -1,7 +1,9 @@
 path = require 'path'
 util = require 'util'
 series = require 'array-series'
-_ = require 'underscore-plus'
+_ = require 'lodash'
+parameterize = require 'parameterize'
+camelize = require 'camelize'
 {EventEmitter} = require 'events'
 Klect = require 'klect'
 
@@ -12,7 +14,7 @@ Klect = require 'klect'
 # Returns: A {String} representing the module's name
 getModuleName = (file) ->
   extname = path.extname file
-  _.camelize path.basename(file, extname)
+  camelize parameterize path.basename(file, extname)
 
 # Private: Loads a singular module as described by {Bijous}. Handles populating
 # the module's service object if it provides one.
@@ -51,7 +53,7 @@ loadModule = (def, services, done) ->
 # Returns: `undefined`
 setService = (def, services, service) ->
   if def.bundle is @defaultBundleName then services[def.name] = service
-  else _.extend services[def.bundle] ?= {}, _.object([def.name], [service])
+  else _.merge services[def.bundle] ?= {}, _.object([def.name], [service])
 
   return
 
@@ -88,7 +90,7 @@ setService = (def, services, service) ->
 # ##### Module Names
 #
 # The module's name is the name of it's file without the path and extension
-# passed as an argument to `_.camelize(path)`.
+# passed as an argument to both `parameterize` and `camelize`.
 #
 # ##### Bundle Name and Namespacing
 #

@@ -1,6 +1,6 @@
 {
   "name": "bijous",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "An asynchronous module loader. Searches out modules within a file system using Klect and supplies an asynchronous means of initializing them. Initialized modules may provide a service that can be used by other modules.",
   "main": "lib/bijous.js",
   "engines": {
@@ -8,8 +8,10 @@
   },
   "dependencies": {
     "array-series": "^0.1.5",
+    "camelize": "^1.0.0",
     "klect": "^0.1.3",
-    "underscore-plus": "^1.5.0"
+    "lodash": "^2.4.1",
+    "parameterize": "0.0.7"
   },
   "devDependencies": {
     "chai": "^1.9.1",
