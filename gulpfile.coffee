@@ -14,6 +14,8 @@ gulp.task 'clean-build', ->
   gulp.src './lib/*'
     .pipe clean { force: true }
 
+gulp.task 'clean', ['clean-build']
+
 gulp.task 'lint', ->
   gulp.src srcFiles.concat ['./*.coffee', './spec/**/*.coffee']
     .pipe coffeelint()
