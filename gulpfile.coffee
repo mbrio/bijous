@@ -1,6 +1,7 @@
 gulp = require 'gulp'
 coffeelint = require 'gulp-coffeelint'
 mocha = require 'gulp-mocha'
+clean = require 'gulp-clean'
 istanbul = require 'gulp-istanbul'
 biscotto = require 'gulp-biscotto'
 coffee = require 'gulp-coffee'
@@ -8,6 +9,10 @@ gutil = require 'gulp-util'
 
 srcFiles = ['./src/**/*.coffee']
 libFiles = ['./lib/**/*.js']
+
+gulp.task 'clean-build', ->
+  gulp.src libFiles
+    .pipe clean { force: true }
 
 gulp.task 'lint', ->
   gulp.src srcFiles.concat ['./*.coffee', './spec/**/*.coffee']
@@ -37,7 +42,7 @@ gulp.task 'docs', ->
   biscotto()
     .pipe gulp.dest './docs'
 
-gulp.task 'build', ->
+gulp.task 'build', ['clean-build'], ->
   gulp.src srcFiles
     .pipe coffee({ bare: true }).on('error', gutil.log)
     .pipe gulp.dest 'lib'
