@@ -39,6 +39,12 @@ gulp.task 'build', ->
     .pipe coffee({ bare: true }).on('error', gutil.log)
     .pipe gulp.dest 'lib'
 
+gulp.task 'ci', ->
+  gulp.watch srcFiles.concat(['./spec/**/*']), ['test']
+
+gulp.task 'watch', ->
+  gulp.watch srcFiles, ['build']
+
 gulp.task 'doc', ['docs']
 
 gulp.task 'default', ['test']
