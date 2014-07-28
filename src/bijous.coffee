@@ -31,11 +31,19 @@ getModuleName = (file) ->
 #
 # Returns: `undefined`
 loadModule = (def, services, done) ->
-  def.module.call null, @, services, (error, service) =>
+  # console.log def.module.length
+  isAsync = def.module.length > 2
+  moduleDone = (error, service) =>
     setService.call(this, def, services, service) if service
 
     @emit 'loaded', def.name, def.bundle, services unless error
     done error
+
+  if isAsync
+    def.module.call null, @, services, moduleDone
+  else
+    def.module.call null, @, services
+    moduleDone()
 
   return
 
